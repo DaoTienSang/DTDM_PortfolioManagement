@@ -1,0 +1,1413 @@
+{% extends 'portfolio/base.html' %}
+{% load humanize %}
+{% load currency_filters %}
+
+{% block title %}Quản lý tài sản | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="asset-manager-page">
+    <!-- Header Section -->
+    <div class="asset-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="page-meta" data-aos="fade-right">
+                    <div class="meta-badge">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Quản lý đầu tư</span>
+                    </div>
+                    <h1 class="page-title">Danh mục <span class="text-gradient">tài sản</span> của bạn</h1>
+                    <p class="page-subtitle">Theo dõi hiệu suất đầu tư và quản lý danh mục tài sản của bạn</p>
+                </div>
+                <div class="header-actions" data-aos="fade-left">
+                    <div class="dropdown">
+                        <button class="btn-action btn-primary dropdown-toggle" type="button" id="buyAssetDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Thao tác</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-xl" aria-labelledby="buyAssetDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% if request.user.portfolios.first %}{% url 'buy_stock' portfolio_id=request.user.portfolios.first.id %}{% else %}{% url 'portfolio_list' %}{% endif %}">
+                                    <i class="fas fa-shopping-cart text-success"></i>
+                                    <span>Mua cổ phiếu</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% if request.user.portfolios.first %}{% url 'sell_stock' portfolio_id=request.user.portfolios.first.id %}{% else %}{% url 'portfolio_list' %}{% endif %}">
+                                    <i class="fas fa-hand-holding-usd text-danger"></i>
+                                    <span>Bán cổ phiếu</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'asset_create' %}">
+                                    <i class="fas fa-plus text-primary"></i>
+                                    <span>Thêm mã cổ phiếu mới</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Section -->
+    <div class="analytics-section">
+        <div class="container">
+            <div class="analytics-grid">
+                <div class="analytics-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-icon total-value">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="info-title">Tổng giá trị tài sản</h3>
+                        <div class="info-value">{{ total_current_value|default:"0"|dinh_dang_tien }} <span class="currency">VND</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analytics-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card-icon profit-loss {% if total_profit_loss > 0 %}positive{% elif total_profit_loss < 0 %}negative{% else %}neutral{% endif %}">
+                        <i class="fas {% if total_profit_loss > 0 %}fa-chart-line{% elif total_profit_loss < 0 %}fa-chart-line-down{% else %}fa-equals{% endif %}"></i>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="info-title">Lãi/Lỗ</h3>
+                        <div class="info-value {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">
+                            {% if total_profit_loss > 0 %}+{% endif %}{{ total_profit_loss|default:"0"|dinh_dang_tien }} <span class="currency">VND</span>
+                        </div>
+                        <div class="info-percent {% if total_profit_loss > 0 %}positive{% elif total_profit_loss < 0 %}negative{% else %}neutral{% endif %}">
+                            {% if total_profit_loss > 0 %}+{% endif %}{{ total_profit_loss_percent|floatformat:2|default:"0.00" }}%
+                            <i class="fas {% if total_profit_loss > 0 %}fa-arrow-up{% elif total_profit_loss < 0 %}fa-arrow-down{% else %}fa-minus{% endif %}"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analytics-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card-icon assets-count">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="info-title">Số lượng tài sản</h3>
+                        <div class="info-value">{{ assets.count|default:"0" }} <span class="unit">mã CP</span></div>
+                        <div class="info-meta">Đa dạng hóa danh mục của bạn</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="container">
+            <div class="filter-wrapper" data-aos="fade-up">
+                <div class="filter-header">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        <span>Lọc tài sản</span>
+                    </div>
+                    <button class="filter-toggle" id="toggleFilter">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <div class="filter-body" id="filterBody">
+                    <form method="get" class="filter-form">
+                        <div class="form-group search-group">
+                            <div class="input-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <input type="text" name="search" value="{{ request.GET.search }}" 
+                                   class="form-control" 
+                                   placeholder="Tìm kiếm theo mã hoặc tên...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <select name="type" class="form-select">
+                                <option value="">-- Tất cả loại --</option>
+                                {% for type, label in asset_types %}
+                                    <option value="{{ type }}" {% if request.GET.type == type %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select name="sector" class="form-select">
+                                <option value="">-- Tất cả ngành --</option>
+                                {% for sector in sectors %}
+                                    <option value="{{ sector }}" {% if request.GET.sector == sector %}selected{% endif %}>
+                                        {{ sector }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-filter">
+                            <i class="fas fa-filter"></i>
+                            <span>Áp dụng</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assets Table Section -->
+    <div class="assets-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Danh mục cổ phiếu của bạn</h2>
+                </div>
+                <div class="section-actions">
+                    <a href="{% url 'market' %}" class="btn-text">
+                        <span>Xem thị trường</span>
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+            
+            {% if assets %}
+            <div class="assets-table-wrapper" data-aos="fade-up" data-aos-delay="100">
+                <div class="table-responsive">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th>Mã CP</th>
+                                <th>Tên công ty</th>
+                                <th class="text-end">Số lượng</th>
+                                <th class="text-end">Giá TB</th>
+                                <th class="text-end">Giá hiện tại</th>
+                                <th class="text-end">Tổng giá trị</th>
+                                <th class="text-end">Lãi/Lỗ</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assets %}
+                            <tr class="asset-row">
+                                <td>
+                                    <div class="asset-symbol">
+                                        <div class="symbol-icon">{{ asset.symbol|slice:":1" }}</div>
+                                        <span class="symbol-text">{{ asset.symbol }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="asset-name">
+                                        <span class="name-text">{{ asset.name }}</span>
+                                        <span class="asset-type">{{ asset.get_type_display }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="qty-value">{{ asset.quantity|default:"0"|intcomma }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="price-value">{{ asset.average_price|default:"0"|dinh_dang_tien }}</div>
+                                    <div class="price-unit">VND</div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="price-value">{{ asset.current_price|default:"0"|dinh_dang_tien }}</div>
+                                    <div class="price-unit">VND</div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="total-value">{{ asset.total_value|default:"0"|dinh_dang_tien }}</div>
+                                    <div class="price-unit">VND</div>
+                                </td>
+                                <td class="text-end">
+                                    {% if asset.profit_loss %}
+                                    <div class="profit-container">
+                                        <div class="profit-amount {% if asset.profit_loss > 0 %}positive{% elif asset.profit_loss < 0 %}negative{% else %}neutral{% endif %}">
+                                            {% if asset.profit_loss > 0 %}+{% endif %}{{ asset.profit_loss|dinh_dang_tien }} VND
+                                        </div>
+                                        <div class="profit-percent {% if asset.profit_loss > 0 %}positive{% elif asset.profit_loss < 0 %}negative{% else %}neutral{% endif %}">
+                                            {% if asset.profit_loss > 0 %}+{% endif %}{{ asset.profit_loss_percent|floatformat:2 }}%
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="profit-container">
+                                        <div class="profit-amount neutral">0 VND</div>
+                                        <div class="profit-percent neutral">0,00%</div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <a href="{% url 'asset_detail' pk=asset.pk %}" class="btn-action view" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'asset_update' pk=asset.pk %}" class="btn-action edit" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn-action trade" data-bs-toggle="modal" data-bs-target="#tradeModal{{ asset.pk }}" title="Giao dịch">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state" data-aos="fade-up">
+                <div class="empty-illustration">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2459/2459013.png" alt="Không có tài sản">
+                </div>
+                <h3 class="empty-title">Chưa có cổ phiếu nào trong danh mục</h3>
+                <p class="empty-desc">Hãy bắt đầu đầu tư bằng cách thêm cổ phiếu vào danh mục của bạn</p>
+                <div class="empty-actions">
+                    <a href="{% url 'asset_create' %}" class="btn-action-large primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Mua cổ phiếu mới</span>
+                    </a>
+                    <a href="{% url 'transaction_create' %}" class="btn-action-large secondary">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Bán cổ phiếu</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Market Prices Preview Section -->
+    {% if debug_stocks %}
+    <div class="market-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>Giá thị trường gần đây</h2>
+                </div>
+                <div class="section-actions">
+                    <a href="{% url 'market' %}" class="btn-text">
+                        <span>Xem tất cả</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="market-cards" data-aos="fade-up" data-aos-delay="100">
+                {% for symbol in debug_stocks|slice:":5" %}
+                <div class="market-card">
+                    <div class="card-header">
+                        <div class="ticker-symbol">{{ symbol.ticker }}</div>
+                        <div class="change-badge {% if symbol.change > 0 %}positive{% elif symbol.change < 0 %}negative{% else %}neutral{% endif %}">
+                            <i class="fas {% if symbol.change > 0 %}fa-caret-up{% elif symbol.change < 0 %}fa-caret-down{% else %}fa-minus{% endif %}"></i>
+                            {{ symbol.change|floatformat:2 }}%
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="ticker-name">{{ symbol.organ_name|truncatechars:25 }}</div>
+                        <div class="ticker-price">{{ symbol.price|default:"N/A"|floatformat:0|intcomma }}</div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="volume-label">Khối lượng:</div>
+                        <div class="volume-value">{{ symbol.volume|default:"N/A"|intcomma }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Trading Modals -->
+{% for asset in assets %}
+<div class="modal fade" id="tradeModal{{ asset.pk }}" tabindex="-1" aria-labelledby="tradeModal{{ asset.pk }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tradeModal{{ asset.pk }}Label">
+                    <i class="fas fa-exchange-alt"></i> Giao dịch {{ asset.symbol }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="asset-preview">
+                    <div class="asset-preview-symbol">{{ asset.symbol }}</div>
+                    <div class="asset-preview-name">{{ asset.name }}</div>
+                    <div class="asset-preview-tag">{{ asset.get_type_display }}</div>
+                </div>
+                
+                <div class="asset-price-info">
+                    <div class="price-label">Giá hiện tại:</div>
+                    <div class="price-value">{{ asset.current_price|default:"0"|dinh_dang_tien }} VND</div>
+                    <div class="price-updated">
+                        Cập nhật: {{ asset.last_updated|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+                
+                <div class="trade-buttons">
+                    <a href="{% if request.user.portfolios.first %}{% url 'buy_stock' portfolio_id=request.user.portfolios.first.id %}{% else %}#{% endif %}" class="btn-trade buy">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Mua</span>
+                    </a>
+                    <a href="{% if request.user.portfolios.first %}{% url 'sell_stock' portfolio_id=request.user.portfolios.first.id %}{% else %}#{% endif %}" class="btn-trade sell">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Bán</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --secondary: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --dark: #0f172a;
+    --light: #f8fafc;
+    --gray: #64748b;
+    --gray-light: #e2e8f0;
+    --white: #ffffff;
+    --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --gradient-success: linear-gradient(135deg, #10b981, #059669);
+    --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.bg-primary-light {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+}
+.bg-success-light {
+    background-color: rgba(var(--bs-success-rgb), 0.15);
+}
+.profit-badge {
+    background-color: #28a745;
+}
+.loss-badge {
+    background-color: #dc3545;
+}
+
+/* === MAIN STYLES === */
+.asset-manager-page {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    color: var(--dark);
+}
+
+/* === HEADER SECTION === */
+.asset-header {
+    background: var(--gradient-primary);
+    padding: 70px 0;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.asset-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 500px;
+    height: 500px;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+    background-size: 30px 30px;
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 2;
+}
+
+.page-meta {
+    max-width: 650px;
+}
+
+.meta-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+}
+
+.meta-badge i {
+    margin-right: 8px;
+    font-size: 12px;
+}
+
+.page-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #fff, #d1d5db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 90%;
+}
+
+.header-actions {
+    margin-top: 20px;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    white-space: nowrap;
+}
+
+.btn-action i {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.dropdown-menu {
+    border-radius: 12px;
+    padding: 8px;
+    border: none;
+    min-width: 220px;
+}
+
+.dropdown-item {
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    margin-right: 10px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f5f9;
+    transform: translateX(4px);
+}
+
+.dropdown-divider {
+    margin: 8px 0;
+    opacity: 0.1;
+}
+
+/* === ANALYTICS SECTION === */
+.analytics-section {
+    margin-top: -30px;
+    position: relative;
+    z-index: 10;
+    padding-bottom: 40px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.analytics-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    padding: 25px;
+    display: flex;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-right: 18px;
+    flex-shrink: 0;
+}
+
+.total-value {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.profit-loss {
+    border-radius: 14px;
+}
+
+.profit-loss.positive {
+    background: var(--gradient-success);
+    color: white;
+}
+
+.profit-loss.negative {
+    background: var(--gradient-danger);
+    color: white;
+}
+
+.profit-loss.neutral {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: white;
+}
+
+.assets-count {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+}
+
+.card-info {
+    flex: 1;
+}
+
+.info-title {
+    font-size: 1rem;
+    color: var(--gray);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: baseline;
+}
+
+.currency {
+    font-size: 1rem;
+    margin-left: 5px;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+.unit {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-left: 5px;
+}
+
+.info-percent {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.info-percent i {
+    margin-left: 4px;
+}
+
+.info-percent.positive {
+    background-color: #dcfce7;
+    color: var(--success);
+}
+
+.info-percent.negative {
+    background-color: #fee2e2;
+    color: var(--danger);
+}
+
+.info-percent.neutral {
+    background-color: #f1f5f9;
+    color: var(--gray);
+}
+
+.info-meta {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: 8px;
+}
+
+.progress-bar {
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+/* === FILTER SECTION === */
+.filter-section {
+    padding: 20px 0 30px;
+}
+
+.filter-wrapper {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.filter-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--dark);
+}
+
+.filter-title i {
+    margin-right: 10px;
+    color: var(--primary);
+}
+
+.filter-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+    background-color: #f1f5f9;
+}
+
+.filter-body {
+    padding: 20px 24px;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-group {
+    position: relative;
+    flex: 2;
+}
+
+.input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: var(--gray);
+}
+
+.search-group .form-control {
+    padding-left: 40px;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--gray-light);
+    border-radius: 10px;
+    padding: 12px 16px;
+    width: 100%;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.btn-filter {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-filter i {
+    margin-right: 8px;
+}
+
+.btn-filter:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* === ASSETS SECTION === */
+.assets-section {
+    padding: 30px 0 60px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.section-title h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--dark);
+}
+
+.section-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-text {
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-text i {
+    margin-left: 8px;
+}
+
+.btn-text:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+}
+
+.assets-table-wrapper {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.assets-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.assets-table thead {
+    background-color: #f8fafc;
+}
+
+.assets-table th {
+    padding: 16px 20px;
+    font-weight: 600;
+    color: var(--gray);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.assets-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.asset-row {
+    transition: all 0.2s ease;
+}
+
+.asset-row:hover {
+    background-color: #f8fafc;
+}
+
+.asset-symbol {
+    display: flex;
+    align-items: center;
+}
+
+.symbol-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 12px;
+}
+
+.symbol-text {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.asset-name {
+    display: flex;
+    flex-direction: column;
+}
+
+.name-text {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.asset-type {
+    font-size: 0.813rem;
+    color: var(--gray);
+    padding: 2px 8px;
+    background-color: #f1f5f9;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.qty-value {
+    font-weight: 600;
+}
+
+.price-value {
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.price-unit {
+    font-size: 0.75rem;
+    color: var(--gray);
+}
+
+.total-value {
+    font-weight: 700;
+}
+
+.profit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.profit-amount {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.profit-percent {
+    font-size: 0.813rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.positive {
+    color: var(--success);
+}
+
+.negative {
+    color: var(--danger);
+}
+
+.neutral {
+    color: var(--gray);
+}
+
+.profit-percent.positive {
+    background-color: #dcfce7;
+}
+
+.profit-percent.negative {
+    background-color: #fee2e2;
+}
+
+.profit-percent.neutral {
+    background-color: #f1f5f9;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action.view {
+    background-color: #e0e7ff;
+    color: var(--primary);
+}
+
+.btn-action.edit {
+    background-color: #fef3c7;
+    color: var(--warning);
+}
+
+.btn-action.trade {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
+.btn-action:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-illustration {
+    margin-bottom: 30px;
+}
+
+.empty-illustration img {
+    width: 150px;
+    opacity: 0.7;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--dark);
+}
+
+.empty-desc {
+    color: var(--gray);
+    max-width: 450px;
+    margin: 0 auto 30px;
+}
+
+.empty-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-action-large {
+    padding: 12px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-action-large i {
+    margin-right: 8px;
+}
+
+.btn-action-large.primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-action-large.secondary {
+    background: white;
+    border: 1px solid var(--gray-light);
+    color: var(--dark);
+}
+
+.btn-action-large:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* === MARKET SECTION === */
+.market-section {
+    padding: 30px 0 60px;
+    background-color: #f1f5f9;
+    border-radius: 30px 30px 0 0;
+    margin-top: 30px;
+}
+
+.market-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.market-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.market-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.market-card .card-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.ticker-symbol {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.change-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.813rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.change-badge i {
+    margin-right: 4px;
+}
+
+.change-badge.positive {
+    background-color: #dcfce7;
+    color: var(--success);
+}
+
+.change-badge.negative {
+    background-color: #fee2e2;
+    color: var(--danger);
+}
+
+.change-badge.neutral {
+    background-color: #f1f5f9;
+    color: var(--gray);
+}
+
+.market-card .card-body {
+    padding: 16px;
+    text-align: center;
+}
+
+.ticker-name {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-bottom: 10px;
+    min-height: 40px;
+}
+
+.ticker-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.market-card .card-footer {
+    padding: 12px 16px;
+    background-color: #f8fafc;
+    border-top: 1px solid var(--gray-light);
+    display: flex;
+    justify-content: space-between;
+}
+
+.volume-label {
+    font-size: 0.813rem;
+    color: var(--gray);
+}
+
+.volume-value {
+    font-size: 0.813rem;
+    font-weight: 600;
+}
+
+/* === TRADING MODAL === */
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+    background-color: #f8fafc;
+    border-bottom: 1px solid var(--gray-light);
+    padding: 20px 24px;
+}
+
+.modal-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.modal-title i {
+    margin-right: 10px;
+    color: var(--primary);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.asset-preview {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.asset-preview-symbol {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+.asset-preview-name {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.asset-preview-tag {
+    display: inline-block;
+    padding: 5px 12px;
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 0.813rem;
+    font-weight: 600;
+}
+
+.asset-price-info {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.price-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-bottom: 5px;
+}
+
+.price-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.price-updated {
+    font-size: 0.813rem;
+    color: var(--gray);
+}
+
+.trade-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.btn-trade {
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-trade i {
+    margin-right: 8px;
+}
+
+.btn-trade.buy {
+    background: var(--success);
+    color: white;
+}
+
+.btn-trade.sell {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-trade:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 992px) {
+    .header-content {
+        flex-direction: column;
+    }
+    
+    .header-actions {
+        margin-top: 30px;
+        align-self: flex-start;
+    }
+    
+    .page-title {
+        font-size: 2.2rem;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .market-cards {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    
+    .assets-table th, 
+    .assets-table td {
+        padding: 12px 10px;
+    }
+    
+    .asset-header {
+        padding: 50px 0;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+/* === ADDITIONAL JS BEHAVIOR === */
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle filter panel
+    const toggleFilter = document.getElementById('toggleFilter');
+    const filterBody = document.getElementById('filterBody');
+    
+    if (toggleFilter && filterBody) {
+        toggleFilter.addEventListener('click', function() {
+            filterBody.style.display = filterBody.style.display === 'none' ? 'block' : 'none';
+            toggleFilter.querySelector('i').classList.toggle('fa-chevron-down');
+            toggleFilter.querySelector('i').classList.toggle('fa-chevron-up');
+        });
+    }
+});
+</style>
+{% endblock %}

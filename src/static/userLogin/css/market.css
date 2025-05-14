@@ -1,0 +1,427 @@
+.market-content {
+    padding: 25px;
+    background-color: #f0f2f5;
+    min-height: calc(100vh - 60px);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* Market header */
+.market-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.market-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.market-stats {
+    display: flex;
+    gap: 24px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.stat-item i {
+    color: #3a86ff;
+    font-size: 16px;
+}
+
+.index-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.index-change {
+    font-weight: 500;
+}
+
+.trade-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.search-container {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.stock-search {
+    width: 100%;
+    max-width: 350px;
+    padding: 12px 16px 12px 40px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background-color: white;
+}
+
+.stock-search:focus {
+    border-color: #3a86ff;
+    box-shadow: 0 4px 12px rgba(58, 134, 255, 0.15);
+    outline: none;
+}
+
+.search-container::before {
+    content: "\f002";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #757575;
+    font-size: 16px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: right;
+    border-bottom: 1px solid #eeeeee;
+    transition: background-color 0.2s ease;
+}
+
+th {
+    background-color: #f8fafd;
+    font-weight: 600;
+    color: #424242;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+td {
+    font-size: 14px;
+}
+
+td:first-child {
+    font-weight: 600;
+    color: #333;
+    text-align: left;
+}
+
+tr:hover {
+    background-color: #f5f9ff;
+}
+
+/* Màu sắc cho các loại giá */
+.price-ceiling {
+    color: #9c27b0 !important; /* Tím đậm */
+    font-weight: bold;
+    background-color: rgba(156, 39, 176, 0.08);
+}
+
+.price-floor {
+    color: #1e88e5 !important; /* Xanh dương đậm */
+    font-weight: bold;
+    background-color: rgba(30, 136, 229, 0.08);
+}
+
+.price-reference {
+    color: #ff9800 !important; /* Cam */
+    font-weight: bold;
+}
+
+.price-up {
+    color: #00c853 !important; /* Xanh lá tươi */
+    font-weight: bold;
+    background-color: rgba(0, 200, 83, 0.08);
+}
+
+.price-down {
+    color: #f44336 !important; /* Đỏ tươi */
+    font-weight: bold;
+    background-color: rgba(244, 67, 54, 0.08);
+}
+
+/* Chart Modal Styles */
+.chart-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+}
+
+.chart-modal-content {
+    background-color: #fff;
+    margin: 4% auto;
+    padding: 30px;
+    width: 85%;
+    max-width: 1300px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    position: relative;
+    animation: fadeIn 0.4s ease, slideUp 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); }
+    to { transform: translateY(0); }
+}
+
+.close-modal {
+    position: absolute;
+    right: 24px;
+    top: 18px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #757575;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.close-modal:hover {
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+#chartTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+#stockSymbol {
+    color: #3a86ff;
+    font-weight: 700;
+}
+
+.chart-container {
+    width: 100%;
+    height: 550px;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    padding: 30px;
+    font-size: 16px;
+    background-color: #ffebee;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .chart-modal-content {
+        width: 92%;
+        margin: 6% auto;
+        padding: 25px;
+    }
+    
+    .chart-container {
+        height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .market-content {
+        padding: 16px;
+    }
+    
+    .chart-modal-content {
+        width: 95%;
+        margin: 8% auto;
+        padding: 20px;
+    }
+    
+    .chart-container {
+        height: 400px;
+    }
+    
+    th, td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .stock-search {
+        max-width: 100%;
+    }
+}
+
+/* Thêm loading animation */
+.loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    border-top-color: #3a86ff;
+    animation: spin 1s ease-in-out infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar tùy chỉnh */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Chart Info */
+.chart-info {
+    background-color: #f8fafd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #757575;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Loading row styling */
+.loading-row {
+    text-align: center;
+}
+
+.loading-row td {
+    padding: 30px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Symbol header special styling */
+.symbol-header {
+    text-align: left !important;
+}
+
+/* Responsive adaptations */
+@media (max-width: 992px) {
+    .market-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .market-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .info-row {
+        gap: 16px;
+    }
+    
+    .info-item {
+        flex: 1;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .market-title {
+        font-size: 20px;
+    }
+    
+    .market-stats {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .info-row {
+        flex-wrap: wrap;
+    }
+    
+    .info-item {
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 576px) {
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+} 

@@ -1,0 +1,808 @@
+{% extends 'portfolio/base.html' %}
+{% load currency_filters %}
+
+{% block title %}Danh mục đầu tư | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section with Animation -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-5" data-aos="fade-up">
+        <div class="card-heading mb-3 mb-md-0 d-flex align-items-center">
+            <div class="card-heading-icon bg-primary-subtle rounded-circle p-3 me-3">
+                <i class="fas fa-folder-open text-primary fa-2x"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1 display-6 text-gradient-primary">Danh mục đầu tư của tôi</h2>
+                <p class="text-muted mb-0">Quản lý và theo dõi các khoản đầu tư của bạn</p>
+            </div>
+        </div>
+        <a href="{% url 'portfolio_create' %}" class="btn btn-primary btn-lg shadow-sm hover-lift" data-aos="fade-left">
+            <i class="fas fa-plus me-2"></i>Tạo danh mục mới
+        </a>
+    </div>
+
+    <!-- Dashboard Summary -->
+    {% if portfolios %}
+    <div class="row g-4 mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-md-4">
+            <div class="card border-0 bg-success text-white rounded-4 shadow-sm dashboard-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-white p-3 rounded-circle me-3">
+                            <i class="fas fa-sack-dollar text-success fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Tổng giá trị</h5>
+                    </div>
+                    <div class="card-stats">
+                        <div class="d-flex justify-content-between align-items-end">
+                            <p class="mb-0 text-white-50">
+                                {{ portfolios|length|default:"0" }} Danh mục
+                            </p>
+                            <h3 class="display-6 fw-bold mb-0">
+                                {% with total_value=0 %}
+                                    {% for portfolio in portfolios %}
+                                        {% with total_value=total_value|add:portfolio.total_value %}{% endwith %}
+                                    {% endfor %}
+                                    {{ total_value|default:"0"|floatformat:0|stringformat:',d'|safe }}
+                                {% endwith %}
+                            </h3>
+                        </div>
+                        <div class="mt-1 text-end">
+                            <small class="text-white-50">VNĐ</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-primary text-white rounded-4 shadow-sm dashboard-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-white p-3 rounded-circle me-3">
+                            <i class="fas fa-chart-line text-primary fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Tỷ suất sinh lời</h5>
+                    </div>
+                    {% with total_value=0 total_cost=0 %}
+                        {% for portfolio in portfolios %}
+                            {% with total_value=total_value|add:portfolio.total_value %}{% endwith %}
+                            {% with total_cost=total_cost|add:portfolio.total_cost %}{% endwith %}
+                        {% endfor %}
+                        
+                        {% with profit=total_value|add:"-"|add:total_cost %}
+                            {% with percentage=profit|profit_percentage:total_cost %}
+                                <div class="card-stats">
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <div>
+                                            <span class="badge {% if percentage >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                {% if percentage >= 0 %}+{% endif %}{{ percentage|floatformat:2 }}%
+                                            </span>
+                                        </div>
+                                        <h3 class="display-6 fw-bold mb-0 {% if percentage >= 0 %}text-success-emphasis{% else %}text-danger-emphasis{% endif %}">
+                                            {% if profit >= 0 %}+{% endif %}{{ profit|floatformat:0|stringformat:',d'|safe }}
+                                        </h3>
+                                    </div>
+                                    <div class="mt-1 text-end">
+                                        <small class="text-white-50">VNĐ</small>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-info text-white rounded-4 shadow-sm dashboard-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-white p-3 rounded-circle me-3">
+                            <i class="fas fa-bullseye text-info fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Mục tiêu đầu tư</h5>
+                    </div>
+                    {% with total_target=0 total_value=0 %}
+                        {% for portfolio in portfolios %}
+                            {% with total_target=total_target|add:portfolio.target_value %}{% endwith %}
+                            {% with total_value=total_value|add:portfolio.total_value %}{% endwith %}
+                        {% endfor %}
+                        
+                        {% with progress_percentage=total_value|progress:total_target %}
+                            <div class="card-stats">
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <p class="mb-0 text-white-50">
+                                        {{ total_value|default:"0"|floatformat:0|stringformat:',d'|safe }} / {{ total_target|floatformat:0|stringformat:',d'|safe }} VNĐ
+                                    </p>
+                                    <h3 class="display-6 fw-bold mb-0">
+                                        {{ progress_percentage|floatformat:0 }}%
+                                    </h3>
+                                </div>
+                            </div>
+                            <div class="progress mt-3 bg-white bg-opacity-25" style="height: 10px;">
+                                <div class="progress-bar bg-white" role="progressbar" 
+                                    style="width: {{ progress_percentage|floatformat:0 }}%;" 
+                                    aria-valuenow="{{ progress_percentage|floatformat:0 }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Portfolio Cards -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% if portfolios %}
+            {% for portfolio in portfolios %}
+                <div class="col" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:50 }}">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift position-relative overflow-hidden portfolio-card">
+                        <!-- Risk Level Indicator -->
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <span class="badge {% if portfolio.risk_tolerance == 'high' %}bg-danger{% elif portfolio.risk_tolerance == 'medium' %}bg-warning{% else %}bg-success{% endif %} rounded-pill px-3 py-2 risk-badge">
+                                {{ portfolio.get_risk_tolerance_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <!-- Portfolio Header -->
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-primary-subtle p-3 rounded-circle me-3">
+                                    <i class="fas fa-folder text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title mb-0 fw-bold">{{ portfolio.name }}</h4>
+                                    <p class="text-muted small mb-0">Tạo: {{ portfolio.created_at|date:"d/m/Y" }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Portfolio Goal -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-bullseye text-purple me-2"></i>
+                                    <h6 class="text-uppercase small text-muted mb-0">Mục tiêu đầu tư</h6>
+                                </div>
+                                <p class="text-dark small mb-0 ms-4">
+                                    {{ portfolio.investment_goal|default:"Tăng trưởng Dài Hạn" }}
+                                </p>
+                            </div>
+                            
+                            <!-- Portfolio Progress -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold small text-uppercase text-muted mb-0">TIẾN ĐỘ MỤC TIÊU</h6>
+                                    <span class="fw-bold badge bg-primary rounded-pill">{{ portfolio.target_progress|floatformat:0 }}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress" style="height: 12px;">
+                                        <div class="progress-bar progress-bar-animated {% if portfolio.target_progress < 50 %}bg-warning{% elif portfolio.target_progress < 80 %}bg-info{% else %}bg-success{% endif %}" 
+                                            role="progressbar" 
+                                            style="width: {{ portfolio.target_progress|floatformat:0 }}%;" 
+                                            aria-valuenow="{{ portfolio.target_progress|floatformat:0 }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="progress-milestone" style="left: 33%">
+                                        <div class="milestone-marker"></div>
+                                        <span class="milestone-label">33%</span>
+                                    </div>
+                                    <div class="progress-milestone" style="left: 66%">
+                                        <div class="milestone-marker"></div>
+                                        <span class="milestone-label">66%</span>
+                                    </div>
+                                    <div class="progress-milestone" style="left: 100%">
+                                        <div class="milestone-marker"></div>
+                                        <span class="milestone-label">100%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Portfolio Value -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 mb-2">
+                                    <h6 class="text-muted mb-3 small text-uppercase">GIÁ TRỊ ĐẦU TƯ</h6>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light border-0 rounded-4">
+                                        <div class="card-body p-3">
+                                            <h6 class="text-muted mb-2 small text-uppercase">Hiện tại</h6>
+                                            <h4 class="mb-0 fw-bold">{{ portfolio.total_value|default:"0"|floatformat:0|stringformat:',d'|safe }} VNĐ</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light border-0 rounded-4">
+                                        <div class="card-body p-3">
+                                            <h6 class="text-muted mb-2 small text-uppercase">Mục tiêu</h6>
+                                            <h4 class="mb-0 fw-bold">{{ portfolio.target_value|floatformat:0|stringformat:',d'|safe }} VNĐ</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Portfolio Performance -->
+                            <div class="card border-0 rounded-4 {% if portfolio.profit_loss_percentage >= 0 %}bg-success-light profit-border{% elif portfolio.profit_loss_percentage < 0 %}bg-danger-light loss-border{% else %}bg-light{% endif %} mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="text-muted mb-2 small text-uppercase">Lợi nhuận</h6>
+                                    <h4 class="mb-0 fw-bold {% if portfolio.profit_loss_percentage >= 0 %}profit-value{% elif portfolio.profit_loss_percentage < 0 %}loss-value{% endif %}">
+                                        {% if portfolio.profit_loss >= 0 %}+{% endif %}{{ portfolio.profit_loss|floatformat:0|stringformat:',d'|safe }} VNĐ
+                                        <small>({{ portfolio.profit_loss_percentage|floatformat:2 }}%)</small>
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Portfolio Actions -->
+                        <div class="card-footer bg-transparent p-4 border-0">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'portfolio_detail' pk=portfolio.pk %}" class="btn btn-primary flex-grow-1 me-2 hover-lift-sm portfolio-detail-btn">
+                                    <i class="fas fa-chart-pie me-2"></i> Chi tiết
+                                </a>
+                                <div class="dropdown">
+                                    <button class="btn btn-light dropdown-toggle hover-lift-sm" type="button" id="dropdownMenuButton{{ portfolio.pk }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ portfolio.pk }}">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'buy_stock' portfolio_id=portfolio.pk %}">
+                                                <i class="fas fa-cart-plus text-success me-2"></i> Mua cổ phiếu
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'sell_stock' portfolio_id=portfolio.pk %}">
+                                                <i class="fas fa-cart-arrow-down text-danger me-2"></i> Bán cổ phiếu
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'portfolio_update' pk=portfolio.pk %}">
+                                                <i class="fas fa-edit text-primary me-2"></i> Chỉnh sửa
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center" data-aos="fade-up">
+                    <div class="py-5">
+                        <div class="mb-4">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1903/1903162.png" alt="Empty portfolio" class="img-fluid" style="max-width: 180px; opacity: 0.7;">
+                            <div class="ripple-container mt-3">
+                                <div class="ripple"></div>
+                                <div class="ripple"></div>
+                                <div class="ripple"></div>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold text-gradient-primary mb-3">Chưa có danh mục đầu tư nào</h3>
+                        <p class="text-muted mb-4">Bắt đầu hành trình đầu tư của bạn bằng cách tạo danh mục đầu tư đầu tiên</p>
+                        <a href="{% url 'portfolio_create' %}" class="btn btn-primary btn-lg px-4 py-2 shadow hover-lift">
+                            <i class="fas fa-plus me-2"></i>Tạo danh mục mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Custom CSS for this page -->
+<style>
+    /* Gradient backgrounds - simplified */
+    .bg-primary {
+        background-color: #5e35b1;
+        box-shadow: 0 4px 15px rgba(94, 53, 177, 0.2);
+    }
+    .bg-success {
+        background-color: #2e7d32;
+        box-shadow: 0 4px 15px rgba(67, 160, 71, 0.2);
+    }
+    .bg-info {
+        background-color: #0288d1;
+        box-shadow: 0 4px 15px rgba(2, 136, 209, 0.2);
+    }
+    .bg-warning {
+        background-color: #f57c00;
+        box-shadow: 0 4px 15px rgba(245, 124, 0, 0.2);
+    }
+    .bg-danger {
+        background-color: #d32f2f;
+        box-shadow: 0 4px 15px rgba(211, 47, 47, 0.2);
+    }
+
+    /* Text gradient - simplified */
+    .text-gradient-primary {
+        color: #5e35b1;
+        font-weight: 700;
+        position: relative;
+    }
+    
+    .text-gradient-primary::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background-color: #5e35b1;
+        border-radius: 3px;
+    }
+
+    /* Card hover effects - simplified but still nice */
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    .hover-lift-sm {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-lift-sm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Icon circle */
+    .icon-circle {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: rgba(94, 53, 177, 0.1);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Progress bar enhancements - simplified and better colors */
+    .progress {
+        overflow: hidden;
+        border-radius: 8px;
+        background-color: #f0f0f0;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+        margin-bottom: 5px;
+    }
+    
+    .progress-bar {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #4caf50;
+        background-image: linear-gradient(45deg, 
+            rgba(255,255,255,.15) 25%, 
+            transparent 25%, 
+            transparent 50%, 
+            rgba(255,255,255,.15) 50%, 
+            rgba(255,255,255,.15) 75%, 
+            transparent 75%, 
+            transparent);
+        background-size: 20px 20px;
+    }
+    
+    .progress-bar-animated {
+        animation: progress-bar-move 1.5s linear infinite;
+    }
+    
+    @keyframes progress-bar-move {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 20px 0;
+        }
+    }
+    
+    /* Cleaner background pattern */
+    .card.hover-lift::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: none;
+        opacity: 0;
+        z-index: 0;
+    }
+    
+    /* Ripple animation - more subtle */
+    .ripple-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    .ripple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(76, 175, 80, 0.3);
+        border-radius: 50%;
+        animation: ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+    .ripple:nth-child(2) {
+        animation-delay: 0.4s;
+    }
+    .ripple:nth-child(3) {
+        animation-delay: 0.8s;
+    }
+    
+    @keyframes ripple {
+        0% {
+            width: 0;
+            height: 0;
+            opacity: 1;
+        }
+        100% {
+            width: 100px;
+            height: 100px;
+            opacity: 0;
+        }
+    }
+    
+    /* Subtle shadow and cleaner boxes */
+    .bg-success-subtle {
+        background-color: rgba(76, 175, 80, 0.1);
+        border-left: 2px solid #4caf50;
+    }
+    
+    .bg-primary-subtle {
+        background-color: rgba(94, 53, 177, 0.1);
+        border-left: 2px solid #5e35b1;
+    }
+    
+    .bg-danger-subtle {
+        background-color: rgba(211, 47, 47, 0.1);
+        border-left: 2px solid #d32f2f;
+    }
+    
+    /* Value boxes - enhanced */
+    .value-box {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .value-box:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .value-box span.fw-bold {
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    
+    .text-uppercase {
+        letter-spacing: 0.5px;
+    }
+    
+    /* Badge styles */
+    .badge {
+        padding: 0.4rem 0.7rem;
+        font-weight: 500;
+    }
+
+    /* Format for currency display */
+    .small.text-muted {
+        font-size: 70%;
+        opacity: 0.8;
+    }
+    
+    /* Text colors */
+    .text-success {
+        color: #2e7d32 !important;
+    }
+    
+    .text-danger {
+        color: #c62828 !important;
+    }
+    
+    .text-primary {
+        color: #5e35b1 !important;
+    }
+    
+    /* Card styling */
+    .card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    /* Portfolio detail button - simplified */
+    .portfolio-detail-btn {
+        position: relative;
+        z-index: 10;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .portfolio-detail-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    .portfolio-detail-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    /* Button click effect - simplified */
+    .btn-clicked {
+        transform: translateY(1px) !important;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.08) !important;
+        transition: transform 0.1s ease-in-out;
+    }
+    
+    /* Portfolio card */
+    .portfolio-card {
+        cursor: pointer;
+        background-color: #fff;
+        border: none !important;
+        transition: all 0.3s ease;
+    }
+    
+    .portfolio-card:hover {
+        background-color: #fafafa;
+    }
+    
+    /* Clean subtle boxes */
+    .bg-light {
+        background-color: rgba(0, 0, 0, 0.02) !important;
+        border-radius: 8px;
+    }
+    
+    /* Custom animation for dashboard cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .row > [data-aos="fade-up"] {
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+    
+    /* Update spacing */
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Update empty state */
+    .ripple {
+        border-color: rgba(94, 53, 177, 0.2);
+    }
+
+    /* Progress milestones */
+    .progress-container {
+        position: relative;
+        padding-bottom: 25px;
+    }
+    
+    .progress-milestone {
+        position: absolute;
+        top: 12px;
+        transform: translateX(-50%);
+    }
+    
+    .milestone-marker {
+        width: 2px;
+        height: 12px;
+        background-color: rgba(0, 0, 0, 0.2);
+        margin: 0 auto;
+    }
+    
+    .milestone-label {
+        font-size: 10px;
+        color: #757575;
+        display: block;
+        text-align: center;
+        margin-top: 3px;
+    }
+
+    /* Dashboard cards */
+    .dashboard-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .dashboard-card .card-stats {
+        margin-top: 1rem;
+    }
+    
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .text-success-emphasis {
+        color: #d4edda !important;
+    }
+    
+    .text-danger-emphasis {
+        color: #f8d7da !important;
+    }
+    
+    .display-6 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    /* Value box styles from portfolio detail */
+    .bg-success-light {
+        background-color: rgba(16, 185, 129, 0.08) !important;
+    }
+    
+    .bg-danger-light {
+        background-color: rgba(239, 68, 68, 0.08) !important;
+    }
+    
+    .profit-border {
+        border-left: 4px solid #10b981;
+    }
+    
+    .loss-border {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .profit-value {
+        color: #10b981 !important;
+    }
+    
+    .loss-value {
+        color: #ef4444 !important;
+    }
+
+    /* Custom card styles */
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .card-body.p-3 {
+        padding: 1rem !important;
+    }
+    
+    .card h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .card h6.text-uppercase {
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        color: #666 !important;
+    }
+    
+    .rounded-4 {
+        border-radius: 10px !important;
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    /* Risk badge */
+    .risk-badge {
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bg-warning {
+        background-color: #f59e0b !important;
+        color: #fff;
+    }
+
+    /* Target progress section */
+    .text-dark {
+        color: #343a40 !important;
+    }
+    
+    .text-purple {
+        color: #7366ff !important;
+    }
+    
+    h4.card-title {
+        font-size: 1.4rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Custom filters for calculations in the template
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate progress bars on scroll
+        const progressBars = document.querySelectorAll('.progress-bar');
+        
+        // Add intersection observer to animate progress bars when they come into view
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const progressBar = entry.target;
+                        const targetWidth = progressBar.getAttribute('aria-valuenow') + '%';
+                        
+                        // Initially set width to 0
+                        progressBar.style.width = '0%';
+                        
+                        // Animate to target width
+                        setTimeout(() => {
+                            progressBar.style.transition = 'width 1.5s ease-in-out';
+                            progressBar.style.width = targetWidth;
+                        }, 300);
+                        
+                        // Stop observing once animated
+                        observer.unobserve(progressBar);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            progressBars.forEach(bar => {
+                observer.observe(bar);
+            });
+        }
+        
+        // Đảm bảo các nút chi tiết hoạt động đúng
+        const detailButtons = document.querySelectorAll('.portfolio-detail-btn');
+        
+        detailButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Hiệu ứng khi click nhưng không ngăn chặn chuyển hướng
+                button.classList.add('btn-clicked');
+                
+                // Ngăn chặn sự kiện click lan ra card (nếu cần)
+                e.stopPropagation();
+                
+                // Allow default behavior for link navigation
+                // Không cần gọi preventDefault()
+            });
+        });
+        
+        // Thêm sự kiện click cho các thẻ card để cải thiện UX
+        const portfolioCards = document.querySelectorAll('.portfolio-card');
+        portfolioCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Chỉ chuyển hướng nếu không click vào button hoặc liên kết
+                if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.dropdown')) {
+                    const detailBtn = this.querySelector('.portfolio-detail-btn');
+                    if (detailBtn) {
+                        window.location.href = detailBtn.getAttribute('href');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

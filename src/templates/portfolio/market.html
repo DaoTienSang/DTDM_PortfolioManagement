@@ -1,0 +1,944 @@
+{% extends "portfolio/base.html" %}
+
+{% load static %}
+{% load humanize %}
+
+{% block title %}Thị trường - Portfolio Management{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'userLogin/css/market.css' %}">
+<style>
+    :root {
+        --primary-color: #1a73e8;
+        --primary-dark: #0d47a1;
+        --ceiling-color: #9C27B0;
+        --floor-color: #2196F3;
+        --reference-color: #FFC107;
+        --up-color: #4CAF50;
+        --down-color: #F44336;
+        --border-radius: 12px;
+    }
+    
+    .market-dashboard {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .market-title {
+        color: var(--primary-dark);
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .market-title i {
+        margin-right: 10px;
+        color: var(--primary-color);
+    }
+    
+    .search-container {
+        background-color: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    .stock-search {
+        padding: 12px 20px;
+        border-radius: 30px;
+        border: 1px solid #e0e0e0;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .stock-search:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+    
+    .action-button {
+        padding: 12px 20px;
+        border-radius: 30px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .action-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .action-button i {
+        margin-right: 8px;
+    }
+    
+    .table-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .market-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .market-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .market-table th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        text-align: center;
+        padding: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .market-table td {
+        padding: 12px 15px;
+        text-align: center;
+        border-bottom: 1px solid #f2f2f2;
+        white-space: nowrap;
+    }
+    
+    .market-table tr:hover {
+        background-color: #f8f9fc;
+    }
+    
+    .stock-symbol {
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .price-ceiling { color: var(--ceiling-color); font-weight: bold; }
+    .price-floor { color: var(--floor-color); font-weight: bold; }
+    .price-reference { color: var(--reference-color); font-weight: 600; }
+    .price-up { color: var(--up-color); font-weight: bold; }
+    .price-down { color: var(--down-color); font-weight: bold; }
+    
+    .table-scroll {
+        max-height: 70vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+    }
+    
+    .table-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .table-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(155, 155, 155, 0.5);
+        border-radius: 20px;
+    }
+    
+    .legend {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 20px;
+        background-color: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 0 10px;
+    }
+    
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+        margin-right: 8px;
+    }
+    
+    .color-ceiling { background-color: var(--ceiling-color); }
+    .color-floor { background-color: var(--floor-color); }
+    .color-reference { background-color: var(--reference-color); }
+    .color-up { background-color: var(--up-color); }
+    .color-down { background-color: var(--down-color); }
+    
+    .loading-container {
+        text-align: center;
+        padding: 30px;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 15px;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-left-color: var(--primary-color);
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+        color: var(--down-color);
+        background-color: rgba(244, 67, 54, 0.1);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+    }
+    
+    /* Chart Modal Styles */
+    .chart-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        overflow: auto;
+    }
+    
+    .chart-modal-content {
+        position: relative;
+        background-color: white;
+        margin: 5% auto;
+        padding: 25px;
+        width: 90%;
+        max-width: 1200px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .close-modal {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .close-modal:hover {
+        color: var(--primary-color);
+    }
+    
+    #chartTitle {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: var(--primary-dark);
+        font-weight: 700;
+    }
+    
+    #stockSymbol {
+        color: var(--primary-color);
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 500px;
+        background-color: #fafafa;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    /* Thông tin giá mới nhất */
+    .last-price-info {
+        position: relative;
+        margin-top: 15px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .price-date-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .price-date {
+        font-weight: 600;
+        color: var(--primary-dark);
+        margin-bottom: 10px;
+        font-size: 16px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+    
+    .price-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .price-item {
+        flex: 1;
+        min-width: 90px;
+        font-size: 14px;
+        color: #555;
+    }
+    
+    .price-value {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    /* Di chuột qua biểu đồ hiện thông tin */
+    .tooltip-wrapper {
+        position: absolute;
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+        font-size: 12px;
+        color: #333;
+        z-index: 5;
+        pointer-events: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 992px) {
+        .search-container {
+            flex-direction: column;
+        }
+        
+        .search-box {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .chart-modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+        
+        .chart-container {
+            height: 400px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .market-table th,
+        .market-table td {
+            padding: 10px 8px;
+            font-size: 14px;
+        }
+        
+        .chart-container {
+            height: 350px;
+        }
+    }
+    
+    /* Làm đẹp tooltips biểu đồ nến */
+    .tv-lightweight-charts {
+        font-family: Arial, sans-serif !important;
+    }
+    
+    .tv-lightweight-charts div[class*="tooltip"] {
+        border: none !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 4px !important;
+        padding: 6px 8px !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 12px !important;
+    }
+    
+    /* Chỉ ẩn phần "00:00" trong các tooltips */
+    .tv-lightweight-charts .tv-lightweight-charts-tooltip-time,
+    .tv-lightweight-charts *[class*="-time"],
+    .tv-lightweight-charts span[class*="time"] {
+        display: none !important;
+    }
+    
+    /* Tooltip mốc thời gian */
+    .tv-lightweight-charts .tv-lightweight-charts-tooltip-label {
+        font-weight: 600 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="market-content container py-4">
+    <div class="market-dashboard">
+        <h2 class="market-title">
+            <i class="fas fa-chart-line"></i>
+            Thị trường chứng khoán Việt Nam
+        </h2>
+
+        <div class="search-container d-flex justify-content-between align-items-center">
+            <div class="search-box flex-grow-1 me-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="stockSearch" placeholder="Tìm kiếm mã cổ phiếu..." class="form-control stock-search border-start-0">
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="{% url 'sync_assets' %}" class="btn action-button">
+                    <i class="fas fa-sync-alt"></i> Đồng bộ cổ phiếu
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+        <div class="messages mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if request.user.is_staff %}
+        <div id="debugInfo" class="mb-3"></div>
+        {% endif %}
+        
+        <div class="table-container">
+            <div class="table-scroll">
+                <table class="market-table table table-hover">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="min-width: 70px;">Mã CK</th>
+                            <th rowspan="2" style="min-width: 80px;">Trần</th>
+                            <th rowspan="2" style="min-width: 80px;">Sàn</th>
+                            <th rowspan="2" style="min-width: 80px;">TC</th>
+                            <th colspan="2">Khớp lệnh</th>
+                        </tr>
+                        <tr>
+                            <th style="min-width: 80px;">Giá</th>
+                            <th style="min-width: 120px;">Khối lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marketTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="loading-container">
+                                    <div class="loading-spinner"></div>
+                                    <span>Đang tải dữ liệu thị trường...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color color-ceiling"></div>
+                <span>Giá trần</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color color-floor"></div>
+                <span>Giá sàn</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color color-reference"></div>
+                <span>Giá tham chiếu</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color color-up"></div>
+                <span>Tăng giá</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color color-down"></div>
+                <span>Giảm giá</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart Modal -->
+    <div id="chartModal" class="chart-modal">
+        <div class="chart-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="chartTitle">Biểu đồ giá cổ phiếu <span id="stockSymbol"></span></h2>
+            <div id="chart-container" class="chart-container"></div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+    
+{% block extra_js %}
+<script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, parsing price board data...');
+        const tableBody = document.getElementById('marketTableBody');
+        
+        try {
+            // Log raw data for debugging
+            console.log('Raw price_board_json:', '{{ price_board_json|escapejs }}');
+            
+            const price_board = JSON.parse('{{ price_board_json|escapejs }}');
+            console.log('Parsed price_board:', price_board);
+            
+            if (!price_board) {
+                throw new Error('Invalid price board data structure');
+            }
+            
+            // Add debugging info for admins
+            if (document.getElementById('debugInfo')) {
+                let debugInfo = '<div class="card mb-3">';
+                debugInfo += '<div class="card-header bg-info text-white">Debug Information</div>';
+                debugInfo += '<div class="card-body">';
+                
+                if (Array.isArray(price_board)) {
+                    debugInfo += `<p>Định dạng dữ liệu: Array of Objects (${price_board.length} records)</p>`;
+                    if (price_board.length > 0) {
+                        debugInfo += `<p>Mẫu dữ liệu: ${JSON.stringify(price_board[0])}</p>`;
+                        debugInfo += `<p>Các cột: ${JSON.stringify(Object.keys(price_board[0]))}</p>`;
+                    }
+                } else if (price_board.data && price_board.columns) {
+                    debugInfo += `<p>Định dạng dữ liệu: Split format</p>`;
+                    debugInfo += `<p>Columns: ${JSON.stringify(price_board.columns)}</p>`;
+                    if (price_board.data.length > 0) {
+                        debugInfo += `<p>First row: ${JSON.stringify(price_board.data[0])}</p>`;
+                    }
+                } else {
+                    debugInfo += `<p>Định dạng dữ liệu không xác định</p>`;
+                    debugInfo += `<p>Keys: ${JSON.stringify(Object.keys(price_board))}</p>`;
+                }
+                
+                debugInfo += '</div></div>';
+                document.getElementById('debugInfo').innerHTML = debugInfo;
+            }
+            
+            // Format functions
+            function formatPrice(price) {
+                if (!price || isNaN(parseFloat(price))) return 'N/A';
+                return parseFloat(price/1000).toFixed(2);
+            }
+            
+            function getPriceClass(matchPrice, refPrice, ceiling, floor) {
+                if (!matchPrice || !refPrice) return '';
+                if (matchPrice === ceiling) return 'price-ceiling';
+                if (matchPrice === floor) return 'price-floor';
+                if (matchPrice === refPrice) return 'price-reference';
+                if (matchPrice > refPrice) return 'price-up';
+                if (matchPrice < refPrice) return 'price-down';
+                return '';
+            }
+            
+            // Xử lý dữ liệu và tạo HTML cho bảng
+            let tableHTML = '';
+            
+            if (Array.isArray(price_board)) {
+                // Định dạng mới: Array of Objects (records)
+                for (let i = 0; i < price_board.length; i++) {
+                    const item = price_board[i];
+                    
+                    // Kiểm tra xem item có phải là object không và có mã CK
+                    if (item && typeof item === 'object' && item.CK) {
+                        const symbol = item.CK;
+                        const ceiling = item.Trần || 0;
+                        const floor = item.Sàn || 0;
+                        const refPrice = item.TC || 0;
+                        const matchPrice = item.Giá || 0;
+                        const matchVol = item['Khối lượng'] || '0';
+                        
+                        tableHTML += `<tr title='Click để xem biểu đồ giá'>
+                            <td class="stock-symbol">${symbol}</td>
+                            <td class="price-ceiling">${formatPrice(ceiling)}</td>
+                            <td class="price-floor">${formatPrice(floor)}</td>
+                            <td class="price-reference">${formatPrice(refPrice)}</td>
+                            <td class="${getPriceClass(matchPrice, refPrice, ceiling, floor)}">${formatPrice(matchPrice)}</td>
+                            <td>${matchVol}</td>
+                        </tr>`;
+                    }
+                }
+            } else if (price_board.data && price_board.columns) {
+                // Cấu trúc dữ liệu cũ (split orientation)
+                const data = price_board.data;
+                const columns = price_board.columns;
+                
+                // Tìm chỉ số cột
+                const colIndices = {};
+                columns.forEach((col, idx) => {
+                    if (col.includes('symbol') || col === 'CK') colIndices.symbol = idx;
+                    if (col.includes('ceiling') || col === 'Trần') colIndices.ceiling = idx;
+                    if (col.includes('floor') || col === 'Sàn') colIndices.floor = idx;
+                    if (col.includes('ref_price') || col === 'TC') colIndices.ref_price = idx;
+                    if (col.includes('match_price') || col === 'Giá') colIndices.match_price = idx;
+                    if (col.includes('match_vol') || col === 'Khối lượng') colIndices.match_vol = idx;
+                });
+                
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i][colIndices.symbol]) {
+                        const symbol = data[i][colIndices.symbol];
+                        const ceiling = colIndices.ceiling !== undefined ? data[i][colIndices.ceiling] : 0;
+                        const floor = colIndices.floor !== undefined ? data[i][colIndices.floor] : 0;
+                        const refPrice = colIndices.ref_price !== undefined ? data[i][colIndices.ref_price] : 0;
+                        const matchPrice = colIndices.match_price !== undefined ? data[i][colIndices.match_price] : 0;
+                        const matchVol = colIndices.match_vol !== undefined ? data[i][colIndices.match_vol] : 0;
+                        
+                        tableHTML += `<tr title='Click để xem biểu đồ giá'>
+                            <td class="stock-symbol">${symbol}</td>
+                            <td class="price-ceiling">${formatPrice(ceiling)}</td>
+                            <td class="price-floor">${formatPrice(floor)}</td>
+                            <td class="price-reference">${formatPrice(refPrice)}</td>
+                            <td class="${getPriceClass(matchPrice, refPrice, ceiling, floor)}">${formatPrice(matchPrice)}</td>
+                            <td>${matchVol}</td>
+                        </tr>`;
+                    }
+                }
+            } else {
+                throw new Error('Định dạng dữ liệu không được hỗ trợ');
+            }
+            
+            if (tableHTML) {
+                tableBody.innerHTML = tableHTML;
+            } else {
+                throw new Error('Không tìm thấy dữ liệu cổ phiếu hợp lệ');
+            }
+            
+            // Add search functionality
+            const searchInput = document.getElementById('stockSearch');
+            searchInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+                const searchText = this.value;
+                const rows = tableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    if (row.cells && row.cells.length > 0) {
+                        const stockSymbol = row.cells[0].textContent;
+                        if (stockSymbol.toUpperCase().includes(searchText)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+            
+            // Add click event to stock symbols to show chart
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells && row.cells.length > 0) {
+                    row.addEventListener('click', function() {
+                        if (this.cells && this.cells.length > 0) {
+                            const stockSymbol = this.cells[0].textContent;
+                            console.log('Clicked stock:', stockSymbol);
+                            showChart(stockSymbol);
+                        }
+                    });
+                    row.style.cursor = 'pointer';
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error processing price board data:', error);
+            tableBody.innerHTML = `<tr><td colspan="6"><div class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Không thể tải dữ liệu thị trường. Vui lòng thử lại sau.<br>
+                <small>Chi tiết lỗi: ${error.message}</small>
+                </div></td></tr>`;
+        }
+
+        // -------------- Chart Modal Functionality
+        const modal = document.getElementById("chartModal");
+        const closeBtn = document.querySelector(".close-modal");
+        
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+            if (typeof chart !== 'undefined' && chart !== null) {
+                chart.remove();
+                chart = null;
+                candleSeries = null;
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+                if (typeof chart !== 'undefined' && chart !== null) {
+                    chart.remove();
+                    chart = null;
+                    candleSeries = null;
+                }
+            }
+        }
+        
+        let chart = null;
+        let candleSeries = null;
+        
+        function showChart(stockCode) {
+            console.log('Opening chart for:', stockCode);
+            document.getElementById('stockSymbol').textContent = stockCode;
+            modal.style.display = "block";
+            
+            createChart();
+            loadChartData(stockCode);
+        }
+        
+        function createChart() {
+            console.log('Creating chart...');
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <span>Đang tải dữ liệu biểu đồ...</span>
+                </div>
+            `;
+            
+            // Không cần tạo chart ngay lúc này, sẽ tạo sau khi dữ liệu được tải xong
+            // Việc này giúp tránh tình trạng loading hiển thị trên biểu đồ
+            console.log('Loading chart data...');
+        }
+        
+        function loadChartData(stockCode) {
+            console.log('Loading data for:', stockCode);
+            
+            fetch(`/api/historical-data/${stockCode}/`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data count:', data.length);
+                    console.log('Sample data:', data.slice(0, 2));
+                    
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Xóa màn hình loading trước khi hiển thị biểu đồ
+                        const chartContainer = document.getElementById('chart-container');
+                        chartContainer.innerHTML = '';
+                        
+                        // Tạo lại biểu đồ với kích thước đúng
+                        chart = LightweightCharts.createChart(chartContainer, {
+                            width: chartContainer.clientWidth,
+                            height: 450,
+                            layout: { 
+                                backgroundColor: '#ffffff',
+                                textColor: '#333',
+                                fontSize: 12,
+                                fontFamily: 'Arial, sans-serif',
+                            },
+                            grid: {
+                                vertLines: { color: '#f0f0f0' },
+                                horzLines: { color: '#f0f0f0' }
+                            },
+                            timeScale: {
+                                timeVisible: true,
+                                secondsVisible: false,
+                                borderColor: '#D6DCDE',
+                            },
+                            rightPriceScale: {
+                                borderColor: '#D6DCDE',
+                            },
+                            crosshair: {
+                                mode: LightweightCharts.CrosshairMode.Normal,
+                                vertLine: {
+                                    color: 'rgba(70, 130, 180, 0.5)',
+                                    width: 1,
+                                    style: 1,
+                                    labelBackgroundColor: '#1a73e8',
+                                },
+                                horzLine: {
+                                    color: 'rgba(70, 130, 180, 0.5)',
+                                    width: 1,
+                                    style: 1,
+                                    labelBackgroundColor: '#1a73e8',
+                                },
+                            },
+                            localization: {
+                                dateFormat: 'dd/MM/yyyy',
+                            },
+                        });
+                        
+                        candleSeries = chart.addCandlestickSeries({
+                            upColor: '#26a69a',
+                            downColor: '#ef5350',
+                            borderVisible: false,
+                            wickUpColor: '#26a69a',
+                            wickDownColor: '#ef5350'
+                        });
+                        
+                        // Xử lý dữ liệu thời gian
+                        const formattedData = data.map(item => {
+                            // Kiểm tra định dạng thời gian
+                            let timeStr = item.time;
+                            
+                            // Nếu đã là string và có định dạng YYYY-MM-DD thì giữ nguyên
+                            if (typeof timeStr === 'string' && timeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                return item;
+                            }
+                            
+                            // Nếu là Date object hoặc timestamp, chuyển thành YYYY-MM-DD
+                            try {
+                                const date = new Date(timeStr);
+                                if (!isNaN(date.getTime())) {
+                                    const formattedTime = date.toISOString().split('T')[0];
+                                    return {
+                                        ...item,
+                                        time: formattedTime
+                                    };
+                                }
+                            } catch (e) {
+                                console.error('Error parsing date:', timeStr, e);
+                            }
+                            
+                            // Nếu không thể chuyển đổi, giữ nguyên
+                            return item;
+                        });
+                        
+                        console.log('Formatted data sample:', formattedData.slice(0, 2));
+                        
+                        // Thử set dữ liệu
+                        try {
+                            candleSeries.setData(formattedData);
+                            // Đảm bảo hiển thị đủ toàn bộ biểu đồ
+                            chart.timeScale().fitContent();
+                            console.log('Chart data set successfully');
+                        } catch (err) {
+                            console.error('Error setting chart data:', err);
+                            // Thử xử lý lại với định dạng khác nếu cần
+                            try {
+                                // Nếu thất bại, thử chuyển đổi sang cấu trúc đơn giản hơn
+                                const simplifiedData = formattedData.map(item => ({
+                                    time: item.time,
+                                    open: Number(item.open),
+                                    high: Number(item.high),
+                                    low: Number(item.low),
+                                    close: Number(item.close),
+                                    volume: item.volume ? Number(item.volume) : undefined
+                                }));
+                                console.log('Simplified data sample:', simplifiedData.slice(0, 2));
+                                candleSeries.setData(simplifiedData);
+                                chart.timeScale().fitContent();
+                                console.log('Chart data set with simplified format');
+                            } catch (finalErr) {
+                                console.error('Final error setting chart data:', finalErr);
+                                throw finalErr;
+                            }
+                        }
+                        
+                        // Add volume series nếu có dữ liệu khối lượng
+                        if (data[0].volume) {
+                            try {
+                                const volumeSeries = chart.addHistogramSeries({
+                                    color: '#26a69a80',
+                                    priceFormat: {
+                                        type: 'volume',
+                                    },
+                                    priceScaleId: '',
+                                    scaleMargins: {
+                                        top: 0.8,
+                                        bottom: 0,
+                                    },
+                                });
+                                
+                                const volumeData = formattedData.map(item => ({
+                                    time: item.time,
+                                    value: Number(item.volume),
+                                    color: item.close >= item.open ? '#26a69a80' : '#ef535080'
+                                }));
+                                
+                                volumeSeries.setData(volumeData);
+                                console.log('Volume data set successfully');
+                            } catch (e) {
+                                console.error('Error setting volume data:', e);
+                            }
+                        }
+                        
+                        // Thêm chi tiết ngày gần nhất
+                        try {
+                            const lastDataPoint = formattedData[formattedData.length - 1];
+                            const lastTimeParts = lastDataPoint.time.split('-');
+                            const dateStr = lastTimeParts.length === 3 ? 
+                                `${lastTimeParts[2]}/${lastTimeParts[1]}/${lastTimeParts[0]}` : 
+                                'Dữ liệu mới nhất';
+                            
+                            // Thêm thông tin tóm tắt giao dịch gần nhất
+                            const lastPriceInfo = document.createElement('div');
+                            lastPriceInfo.className = 'last-price-info';
+                            lastPriceInfo.innerHTML = `
+                                <div class="price-date-info">
+                                    <div class="price-date">${dateStr}</div>
+                                    <div class="price-summary">
+                                        <div class="price-item">Mở: <span class="price-value">${Number(lastDataPoint.open).toLocaleString('vi-VN')}</span></div>
+                                        <div class="price-item">Cao: <span class="price-value">${Number(lastDataPoint.high).toLocaleString('vi-VN')}</span></div>
+                                        <div class="price-item">Thấp: <span class="price-value">${Number(lastDataPoint.low).toLocaleString('vi-VN')}</span></div>
+                                        <div class="price-item">Đóng: <span class="price-value">${Number(lastDataPoint.close).toLocaleString('vi-VN')}</span></div>
+                                        ${lastDataPoint.volume ? `<div class="price-item">KL: <span class="price-value">${Number(lastDataPoint.volume).toLocaleString('vi-VN')}</span></div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                            chartContainer.appendChild(lastPriceInfo);
+                            console.log('Last price info added');
+                        } catch (e) {
+                            console.error('Error adding last price info:', e);
+                        }
+                    } else {
+                        throw new Error('Invalid data format or empty data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading chart data:', error);
+                    document.getElementById('chart-container').innerHTML = `
+                        <div class="error-message">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Không thể tải dữ liệu biểu đồ. Vui lòng thử lại sau.
+                            <div class="small mt-2">${error.message}</div>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Handle window resize for chart
+        window.addEventListener('resize', function() {
+            if (chart) {
+                chart.applyOptions({
+                    width: document.getElementById('chart-container').clientWidth,
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

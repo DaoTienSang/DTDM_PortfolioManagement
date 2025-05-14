@@ -1,0 +1,106 @@
+{% extends 'portfolio/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Thông tin cá nhân | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 mb-4" data-aos="fade-up">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4 position-relative">
+                        {% if user.get_profile_picture %}
+                            <img src="{{ user.get_profile_picture }}" alt="{{ user.get_full_name|default:user.username }}" 
+                                 class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="icon-circle bg-primary text-white mx-auto" style="width: 150px; height: 150px; font-size: 60px; line-height: 150px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <hr class="my-4">
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <p class="mb-1 d-flex align-items-center">
+                                <i class="fas fa-phone text-primary me-3"></i>
+                                <span class="fw-medium">Số điện thoại:</span>
+                                <span class="ms-2">{{ user.phone|default:"Chưa cập nhật" }}</span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1 d-flex align-items-center">
+                                <i class="fas fa-venus-mars text-primary me-3"></i>
+                                <span class="fw-medium">Giới tính:</span>
+                                <span class="ms-2">{{ user.get_gender_display|default:"Chưa cập nhật" }}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="mb-1 d-flex">
+                                <i class="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
+                                <span class="fw-medium mt-1">Địa chỉ:</span>
+                                <span class="ms-2">{{ user.address|default:"Chưa cập nhật" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h4 class="fw-bold mb-0">Cập nhật thông tin cá nhân</h4>
+                    <p class="text-muted">Cập nhật thông tin cá nhân của bạn</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.gender|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.address|as_crispy_field }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="profilePictureInput" class="form-label">Ảnh đại diện</label>
+                            <div class="input-group">
+                                {{ form.profile_picture }}
+                            </div>
+                            <div class="form-text">Tải lên ảnh đại diện mới. Định dạng hỗ trợ: JPG, PNG. Kích thước tối đa: 5MB.</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,1040 @@
+{% extends 'portfolio/base.html' %}
+{% load humanize %}
+{% load currency_filters %}
+{% load static %}
+
+{% block title %}Bảng điều khiển | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome & Stats -->
+    <div class="container py-5">
+        <!-- Welcome Card -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-0 welcome-card mb-4">
+                    <div class="welcome-pattern"></div>
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="row align-items-center">
+                            <div class="col-lg-6 mb-4 mb-lg-0">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="avatar-container me-3">
+                                        {% if user.get_profile_picture %}
+                                        <img src="{{ user.get_profile_picture }}" alt="{{ user.username }}" 
+                                             class="rounded-circle" style="width: 54px; height: 54px; object-fit: cover; border: 3px solid #7e57c2;">
+                                        {% else %}
+                                        <div class="profile-avatar-circle">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-primary-soft text-primary mb-2">Chào mừng trở lại</span>
+                                        <h2 class="fw-bold mb-0">Xin chào, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}!</h2>
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-4">Đây là tổng quan danh mục đầu tư của bạn hôm nay. Hãy theo dõi và tối ưu hóa đầu tư của bạn.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{% url 'portfolio_create' %}" class="btn btn-primary btn-lg rounded-pill">
+                                        <i class="fas fa-plus me-2"></i>Tạo danh mục
+                                    </a>
+                                    <a href="{% url 'market' %}" class="btn btn-outline-primary btn-lg rounded-pill">
+                                        <i class="fas fa-chart-line me-2"></i>Xem thị trường
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="welcome-illustration">
+                                    <div class="activity-chart">
+                                        {% if user.get_profile_picture %}
+                                        <img src="{{ user.get_profile_picture }}" alt="{{ user.username }}" class="img-fluid rounded-circle profile-image" style="width: 200px; height: 200px; object-fit: cover; border: 5px solid var(--primary-color); box-shadow: 0 10px 25px rgba(126, 87, 194, 0.3);">
+                                        {% else %}
+                                        <div class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center" style="width: 200px; height: 200px; background: linear-gradient(135deg, var(--primary-light), var(--primary-color)); border: 5px solid var(--primary-color); box-shadow: 0 10px 25px rgba(126, 87, 194, 0.3);">
+                                            <span style="font-size: 72px; color: white;">{{ user.username.0|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="profile-glow"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-5">
+            <div class="col-12 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0">
+                        <i class="fas fa-chart-pie me-2 text-primary"></i>Tổng quan tài sản
+                    </h4>
+                    <div class="date-picker-wrapper">
+                        <span class="badge bg-primary-soft text-primary px-3 py-2">
+                            <i class="far fa-calendar-alt me-2"></i>{{ today|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê tổng quan -->
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="stat-card stat-card-portfolio">
+                    <div class="stat-card-body">
+                        <div class="stat-card-icon">
+                            <i class="fas fa-sack-dollar"></i>
+                        </div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-title">Tổng giá trị danh mục</span>
+                            <div class="stat-card-value">{{ total_value|default:"0"|dinh_dang_tien }} VND</div>
+                            <div class="stat-card-progress">
+                                <span class="badge {% if total_profit > 0 %}bg-success-soft text-success{% elif total_profit < 0 %}bg-danger-soft text-danger{% else %}bg-secondary-soft text-secondary{% endif %}">
+                                    <i class="fas {% if total_profit > 0 %}fa-arrow-up{% elif total_profit < 0 %}fa-arrow-down{% else %}fa-minus{% endif %} me-1"></i>
+                                    {% if total_profit > 0 %}+{% endif %}{{ total_profit|default:"0"|floatformat:2 }}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="stat-card stat-card-wallet">
+                    <div class="stat-card-body">
+                        <div class="stat-card-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-title">Số dư ví điện tử</span>
+                            <div class="stat-card-value">{{ wallet.balance|default:"0"|dinh_dang_tien }} VND</div>
+                            <div class="stat-card-progress">
+                                <a href="{% url 'wallet' %}" class="btn btn-sm btn-outline-primary rounded-pill btn-link">Quản lý ví</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="stat-card stat-card-count">
+                    <div class="stat-card-body">
+                        <div class="stat-card-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-title">Số danh mục</span>
+                            <div class="stat-card-value">{{ portfolios.count }}</div>
+                            <div class="stat-card-progress">
+                                <span class="text-muted">Danh mục đang quản lý</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="stat-card stat-card-assets">
+                    <div class="stat-card-body">
+                        <div class="stat-card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-title">Tổng số tài sản</span>
+                            <div class="stat-card-value">{{ total_assets|default:"0" }}</div>
+                            <div class="stat-card-progress">
+                                <span class="text-muted">Cổ phiếu đang nắm giữ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh mục đầu tư -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon-wrapper me-3">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-folder"></i>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-0">Danh mục đầu tư của bạn</h5>
+                            </div>
+                            <a href="{% url 'portfolio_list' %}" class="btn btn-link text-decoration-none text-primary">
+                                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if portfolios %}
+                        <div class="table-responsive dashboard-table">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Tên danh mục</th>
+                                        <th>Giá trị</th>
+                                        <th>Lãi/Lỗ</th>
+                                        <th>Mức độ rủi ro</th>
+                                        <th class="pe-4 text-end">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for portfolio in portfolios %}
+                                    <tr class="portfolio-row">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="portfolio-icon me-3">
+                                                    <i class="fas fa-folder"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ portfolio.name }}</h6>
+                                                    <small class="text-muted">{{ portfolio.investment_goal|default:"Chưa có mục tiêu" }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="portfolio-value">{{ portfolio.total_value|default:"0"|dinh_dang_tien }} VND</span>
+                                        </td>
+                                        <td>
+                                            {% with profit=portfolio.profit_loss_percentage %}
+                                            <div class="profit-badge-wrapper">
+                                                <span class="profit-badge {% if profit > 0 %}profit-up{% elif profit < 0 %}profit-down{% else %}profit-neutral{% endif %}">
+                                                    {% if profit > 0 %}<i class="fas fa-caret-up me-1"></i>+{% elif profit < 0 %}<i class="fas fa-caret-down me-1"></i>{% else %}<i class="fas fa-minus me-1"></i>{% endif %}{{ profit|default:"0"|dinh_dang_tien }}%
+                                                </span>
+                                            </div>
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            <span class="risk-badge risk-{% if portfolio.risk_tolerance == 'high' %}high{% elif portfolio.risk_tolerance == 'medium' %}medium{% else %}low{% endif %}">
+                                                <i class="fas fa-circle me-1"></i>{{ portfolio.get_risk_tolerance_display }}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            <div class="action-buttons">
+                                                <a href="{% url 'portfolio_detail' pk=portfolio.pk %}" class="btn btn-sm action-btn view-btn" title="Chi tiết">
+                                                    <i class="fas fa-eye"></i> <span class="action-text">Chi tiết</span>
+                                                </a>
+                                                <a href="{% url 'portfolio_update' pk=portfolio.pk %}" class="btn btn-sm action-btn edit-btn" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i> <span class="action-text">Sửa</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1903/1903162.png" alt="Empty portfolio" class="img-fluid mb-4" style="max-width: 150px;">
+                                <div class="empty-state-pulse"></div>
+                            </div>
+                            <h5 class="fw-bold mb-2">Chưa có danh mục đầu tư nào</h5>
+                            <p class="text-muted mb-4">Hãy tạo danh mục đầu tư đầu tiên của bạn để theo dõi hiệu suất</p>
+                            <a href="{% url 'portfolio_create' %}" class="btn btn-primary btn-lg rounded-pill px-4 pulse-btn">
+                                <i class="fas fa-plus me-2"></i>Tạo danh mục mới
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tiện ích ví điện tử -->
+        <div class="row mb-5">
+            <div class="col-12 mb-4">
+                <div class="section-header">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-0">Tiện ích ví điện tử</h4>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card deposit-card">
+                    <div class="feature-card-body">
+                        <div class="feature-icon-large">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h5 class="feature-card-title">Nạp tiền</h5>
+                        <p class="feature-card-text">Nạp tiền vào tài khoản của bạn để thực hiện giao dịch mua cổ phiếu</p>
+                        <a href="{% url 'deposit_money' %}" class="btn btn-success btn-lg btn-rounded feature-btn">
+                            <i class="fas fa-plus-circle me-2"></i>Nạp tiền
+                        </a>
+                        <div class="feature-bg-shape"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card withdraw-card">
+                    <div class="feature-card-body">
+                        <div class="feature-icon-large">
+                            <i class="fas fa-minus-circle"></i>
+                        </div>
+                        <h5 class="feature-card-title">Rút tiền</h5>
+                        <p class="feature-card-text">Rút tiền từ tài khoản về tài khoản ngân hàng của bạn</p>
+                        <a href="{% url 'withdraw_money' %}" class="btn btn-primary btn-lg btn-rounded feature-btn">
+                            <i class="fas fa-minus-circle me-2"></i>Rút tiền
+                        </a>
+                        <div class="feature-bg-shape"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card bank-card">
+                    <div class="feature-card-body">
+                        <div class="feature-icon-large">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h5 class="feature-card-title">Tài khoản ngân hàng</h5>
+                        <p class="feature-card-text">Quản lý các tài khoản ngân hàng liên kết với tài khoản của bạn</p>
+                        <a href="{% url 'bank_account_list' %}" class="btn btn-outline-primary btn-lg btn-rounded feature-btn">
+                            <i class="fas fa-university me-2"></i>Quản lý
+                        </a>
+                        <div class="feature-bg-shape"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giao dịch gần đây -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon-wrapper me-3">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                </div>
+                                <h5 class="fw-bold mb-0">Giao dịch gần đây</h5>
+                            </div>
+                            <a href="{% url 'transaction_list' %}" class="btn btn-link text-decoration-none text-primary">
+                                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_transactions %}
+                        <div class="table-responsive dashboard-table">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Mã CP</th>
+                                        <th>Loại GD</th>
+                                        <th>Số lượng</th>
+                                        <th>Giá</th>
+                                        <th>Tổng giá trị</th>
+                                        <th class="pe-4">Thời gian</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in recent_transactions %}
+                                    <tr class="transaction-row">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="stock-icon me-3 {% if transaction.transaction_type == 'buy' %}stock-buy{% else %}stock-sell{% endif %}">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ transaction.asset.symbol }}</h6>
+                                                    <small class="text-muted">{{ transaction.asset.name }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-badge {% if transaction.transaction_type == 'buy' %}transaction-buy{% else %}transaction-sell{% endif %}">
+                                                {% if transaction.transaction_type == 'buy' %}<i class="fas fa-arrow-alt-circle-down me-1"></i>{% else %}<i class="fas fa-arrow-alt-circle-up me-1"></i>{% endif %}
+                                                {{ transaction.get_transaction_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-quantity">{{ transaction.quantity }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-price">{{ transaction.price|default:"0"|dinh_dang_tien }} VND</span>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-total">{{ transaction.total_amount|default:"0"|dinh_dang_tien }} VND</span>
+                                        </td>
+                                        <td class="pe-4">
+                                            <span class="transaction-date">
+                                                <i class="far fa-clock me-1"></i>{{ transaction.transaction_date|date:"d/m/Y H:i" }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon">
+                                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png" alt="No transactions" class="img-fluid mb-4" style="max-width: 150px;">
+                                <div class="empty-state-pulse"></div>
+                            </div>
+                            <h5 class="fw-bold mb-2">Chưa có giao dịch nào</h5>
+                            <p class="text-muted mb-1">Bắt đầu giao dịch để theo dõi lịch sử của bạn</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Màu và thiết lập cơ bản */
+:root {
+    --primary: #7e57c2;
+    --primary-dark: #5e35b1;
+    --primary-light: #d1c4e9;
+    --primary-ultra-light: #f3e5f5;
+    --success: #4caf50;
+    --success-light: #e8f5e9;
+    --danger: #f44336;
+    --danger-light: #ffebee;
+    --warning: #ff9800;
+    --warning-light: #fff3e0;
+    --dark: #212121;
+    --light-gray: #f5f5f5;
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --card-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Container chính */
+.dashboard-container {
+    padding-bottom: 3rem;
+}
+
+/* Welcome Card */
+.welcome-card {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.welcome-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background-image: radial-gradient(var(--primary-light) 2px, transparent 2px);
+    background-size: 20px 20px;
+    opacity: 0.3;
+    border-radius: 0 1.5rem 0 0;
+}
+
+.profile-avatar-circle {
+    width: 54px;
+    height: 54px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.welcome-illustration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.activity-chart {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.profile-image, .user-avatar-placeholder {
+    position: relative;
+    z-index: 2;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: float 6s ease-in-out infinite;
+}
+
+.profile-image:hover, .user-avatar-placeholder:hover {
+    transform: scale(1.05) rotate(3deg);
+    box-shadow: 0 15px 35px rgba(126, 87, 194, 0.4);
+}
+
+.profile-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(126, 87, 194, 0.2) 0%, transparent 70%);
+    z-index: 1;
+    animation: pulse-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse-glow {
+    0% {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+.bg-primary-soft {
+    background-color: var(--primary-ultra-light);
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 1.2rem;
+    box-shadow: var(--card-shadow);
+    background: white;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.stat-card-body {
+    padding: 1.8rem;
+    display: flex;
+    position: relative;
+}
+
+.stat-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-right: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card-info {
+    flex: 1;
+}
+
+.stat-card-title {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.stat-card-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+}
+
+.stat-card-progress {
+    margin-top: 0.7rem;
+}
+
+/* Variant styles for stat cards */
+.stat-card-portfolio {
+    border-left: 4px solid var(--primary);
+}
+
+.stat-card-portfolio .stat-card-icon {
+    background-color: var(--primary-ultra-light);
+    color: var(--primary);
+}
+
+.stat-card-wallet {
+    border-left: 4px solid var(--success);
+}
+
+.stat-card-wallet .stat-card-icon {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.stat-card-count {
+    border-left: 4px solid var(--warning);
+}
+
+.stat-card-count .stat-card-icon {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.stat-card-assets {
+    border-left: 4px solid var(--primary-dark);
+}
+
+.stat-card-assets .stat-card-icon {
+    background-color: var(--primary-ultra-light);
+    color: var(--primary-dark);
+}
+
+/* Status badges */
+.bg-success-soft {
+    background-color: var(--success-light);
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+.bg-danger-soft {
+    background-color: var(--danger-light);
+}
+
+.text-danger {
+    color: var(--danger) !important;
+}
+
+/* Feature icons */
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.feature-icon-wrapper {
+    margin-right: 1rem;
+}
+
+.feature-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 5px 15px rgba(126, 87, 194, 0.2);
+}
+
+/* Portfolio table */
+.dashboard-table {
+    width: 100%;
+}
+
+.dashboard-table thead {
+    background-color: #f8f9fa;
+}
+
+.dashboard-table th {
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem;
+    border-bottom: 2px solid #f1f1f1;
+}
+
+.dashboard-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+}
+
+.portfolio-row, .transaction-row {
+    transition: var(--transition);
+}
+
+.portfolio-row:hover, .transaction-row:hover {
+    background-color: #f8f9fa;
+}
+
+.portfolio-icon {
+    width: 42px;
+    height: 42px;
+    background-color: var(--primary-ultra-light);
+    color: var(--primary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.portfolio-value {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.profit-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.profit-up {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.profit-down {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.profit-neutral {
+    background-color: #f1f1f1;
+    color: #6c757d;
+}
+
+.risk-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.risk-high {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.risk-high i {
+    color: var(--danger);
+}
+
+.risk-medium {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.risk-medium i {
+    color: var(--warning);
+}
+
+.risk-low {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.risk-low i {
+    color: var(--success);
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    transition: var(--transition);
+    background-color: white;
+    border: 1px solid #e9ecef;
+    color: #495057;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.view-btn:hover {
+    background-color: var(--primary-ultra-light);
+    color: var(--primary);
+    border-color: var(--primary-light);
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-ultra-light);
+    color: var(--primary);
+    border-color: var(--primary-light);
+}
+
+.action-text {
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* Feature cards */
+.feature-card {
+    border-radius: 1.2rem;
+    box-shadow: var(--card-shadow);
+    background: white;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-7px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.feature-card-body {
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-icon-large {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    transition: var(--transition);
+}
+
+.deposit-card .feature-icon-large {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.withdraw-card .feature-icon-large {
+    background-color: var(--primary-ultra-light);
+    color: var(--primary);
+}
+
+.bank-card .feature-icon-large {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.feature-card:hover .feature-icon-large {
+    transform: scale(1.1);
+}
+
+.feature-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark);
+}
+
+.feature-card-text {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.feature-btn {
+    align-self: flex-start;
+    transition: var(--transition);
+}
+
+.feature-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-bg-shape {
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    width: 150px;
+    height: 150px;
+    border-radius: 30px;
+    transform: rotate(45deg);
+    z-index: 0;
+    opacity: 0.1;
+    transition: var(--transition);
+}
+
+.deposit-card .feature-bg-shape {
+    background-color: var(--success);
+}
+
+.withdraw-card .feature-bg-shape {
+    background-color: var(--primary);
+}
+
+.bank-card .feature-bg-shape {
+    background-color: var(--warning);
+}
+
+.feature-card:hover .feature-bg-shape {
+    transform: rotate(30deg) scale(1.2);
+}
+
+/* Transaction styles */
+.stock-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.stock-buy {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.stock-sell {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.transaction-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.transaction-buy {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.transaction-sell {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.transaction-quantity, .transaction-price, .transaction-total {
+    font-weight: 500;
+}
+
+.transaction-date {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Empty state styles */
+.empty-state-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.empty-state-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(126, 87, 194, 0.1);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+}
+
+.pulse-btn {
+    animation: pulse-button 2s infinite;
+}
+
+@keyframes pulse-button {
+    0% {
+        box-shadow: 0 0 0 0 rgba(126, 87, 194, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(126, 87, 194, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(126, 87, 194, 0);
+    }
+}
+
+/* Responsive fixes */
+@media (max-width: 992px) {
+    .action-text {
+        display: none;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 0.7rem;
+    }
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.rounded-pill {
+    border-radius: 50rem !important;
+}
+</style>
+{% endblock %} 

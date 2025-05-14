@@ -1,0 +1,139 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block title %}Tài khoản ngân hàng | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="card-heading mb-3 mb-md-0">
+            <div class="card-heading-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            <h2 class="fw-bold mb-0">Tài khoản ngân hàng</h2>
+        </div>
+        <div>
+            <a href="{% url 'bank_account_create' %}" class="btn btn-primary btn-rounded" data-aos="fade-left">
+                <i class="fas fa-plus-circle me-2"></i>Thêm tài khoản
+            </a>
+            <a href="{% url 'wallet' %}" class="btn btn-outline-primary btn-rounded" data-aos="fade-left" data-aos-delay="100">
+                <i class="fas fa-wallet me-2"></i>Quay lại ví
+            </a>
+        </div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading">Thông báo</h6>
+                        <p class="mb-0">{{ message|safe }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if bank_accounts %}
+    <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Ngân hàng</th>
+                            <th>Chủ tài khoản</th>
+                            <th>Số tài khoản</th>
+                            <th>Chi nhánh</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in bank_accounts %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bank-logo me-3">
+                                        <div class="icon-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa;">
+                                            <i class="fas fa-university text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">
+                                            {% if account.bank_name == 'other' %}
+                                                {{ account.other_bank_name }}
+                                            {% else %}
+                                                {{ account.get_bank_name_display }}
+                                            {% endif %}
+                                        </h6>
+                                        <div class="small text-muted">Cập nhật: {{ account.updated_at|date:"d/m/Y" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ account.account_name }}</td>
+                            <td class="text-monospace fw-medium">{{ account.account_number }}</td>
+                            <td>{{ account.branch|default:"-" }}</td>
+                            <td class="text-center">
+                                {% if account.is_default %}
+                                <span class="badge bg-success rounded-pill">Mặc định</span>
+                                {% else %}
+                                <form method="post" action="{% url 'bank_account_set_default' pk=account.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Đặt làm mặc định">
+                                        <i class="far fa-star me-1"></i>Đặt mặc định
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    <a href="{% url 'bank_account_update' pk=account.pk %}" class="btn btn-sm btn-light" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'bank_account_delete' pk=account.pk %}" class="btn btn-sm btn-light text-danger" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up">
+        <div class="card-body py-5">
+            <div class="text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" alt="No bank accounts" class="img-fluid mb-4" style="max-width: 150px; opacity: 0.7;">
+                <h5>Chưa có tài khoản ngân hàng nào</h5>
+                <p class="text-muted">Bạn chưa thêm tài khoản ngân hàng nào vào hệ thống.</p>
+                <a href="{% url 'bank_account_create' %}" class="btn btn-primary btn-rounded px-4 mt-3">
+                    <i class="fas fa-plus me-2"></i>Thêm tài khoản ngân hàng
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card border-0 shadow-sm rounded-4 mt-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+                <div class="icon-circle bg-info-light text-info me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: rgba(0,123,255,0.1);">
+                    <i class="fas fa-info"></i>
+                </div>
+                <h5 class="mb-0">Về tài khoản ngân hàng</h5>
+            </div>
+            
+            <p class="text-muted mb-2">Tài khoản ngân hàng được sử dụng để thực hiện các giao dịch nạp và rút tiền với hệ thống. Bạn có thể thêm nhiều tài khoản ngân hàng khác nhau để sử dụng cho các mục đích khác nhau.</p>
+            <p class="text-muted mb-0">Đảm bảo thông tin tài khoản ngân hàng của bạn chính xác để tránh gặp vấn đề khi giao dịch. Bạn có thể đặt một tài khoản là mặc định để thuận tiện cho các giao dịch sau này.</p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

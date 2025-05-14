@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.git/
+.sqlite3
+# .env Không bỏ up vì đẻ có thể dễ chạy vì dự án này không cần bảo mật

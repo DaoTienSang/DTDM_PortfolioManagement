@@ -1,0 +1,805 @@
+{% extends 'portfolio/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="portfolio-form-page">
+    <!-- Breadcrumb và tiêu đề -->
+    <div class="form-header">
+        <div class="container">
+            <div class="header-content" data-aos="fade-down">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Bảng điều khiển</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'portfolio_list' %}">Danh mục đầu tư</a></li>
+                        <li class="breadcrumb-item active">{{ title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="form-title">
+                    {% if form.instance.pk %}
+                    <span class="highlight">Chỉnh sửa</span> danh mục đầu tư
+                    {% else %}
+                    <span class="highlight">Tạo mới</span> danh mục đầu tư
+                    {% endif %}
+                </h1>
+            </div>
+        </div>
+        <div class="header-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </div>
+
+    <!-- Nội dung form -->
+    <div class="form-content">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="main-form-card" data-aos="fade-up">
+                        <div class="card-indicator">
+                            <div class="indicator-dot"></div>
+                            <div class="indicator-line"></div>
+                        </div>
+                        
+                        <form method="post" novalidate class="portfolio-form">
+                            {% csrf_token %}
+                            
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <h3>Thông tin cơ bản</h3>
+                                </div>
+                                
+                                <div class="form-floating mb-4">
+                                    <input type="text" name="name" class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                                           id="id_name" placeholder="Tên danh mục" value="{{ form.name.value|default:'' }}" required>
+                                    <label for="id_name">Tên danh mục <span class="required-star">*</span></label>
+                                    {% if form.name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-floating mb-4">
+                                    <textarea name="description" class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                              id="id_description" placeholder="Mô tả" style="height: 120px;">{{ form.description.value|default:'' }}</textarea>
+                                    <label for="id_description">Mô tả chi tiết</label>
+                                    {% if form.description.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <h3>Mục tiêu</h3>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-floating">
+                                            <input type="text" name="investment_goal" class="form-control {% if form.investment_goal.errors %}is-invalid{% endif %}" 
+                                                   id="id_investment_goal" placeholder="Mục tiêu đầu tư" value="{{ form.investment_goal.value|default:'' }}">
+                                            <label for="id_investment_goal">Mục tiêu đầu tư</label>
+                                            {% if form.investment_goal.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.investment_goal.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-floating">
+                                            <input type="number" name="target_value" class="form-control {% if form.target_value.errors %}is-invalid{% endif %}" 
+                                                   id="id_target_value" placeholder="Giá trị mục tiêu" value="{{ form.target_value.value|default:'' }}">
+                                            <label for="id_target_value">Giá trị mục tiêu (VNĐ)</label>
+                                            {% if form.target_value.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.target_value.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h3>Mức độ rủi ro</h3>
+                                </div>
+                                
+                                <div class="risk-selector">
+                                    <input type="hidden" name="risk_tolerance" id="id_risk_tolerance" value="{{ form.risk_tolerance.value|default:'medium' }}">
+                                    
+                                    <div class="risk-options">
+                                        <div class="risk-option {% if form.risk_tolerance.value == 'low' or not form.risk_tolerance.value %}active{% endif %}" data-value="low">
+                                            <div class="risk-icon low">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </div>
+                                            <div class="risk-info">
+                                                <h4>Thấp</h4>
+                                                <p>Ưu tiên bảo toàn vốn</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="risk-option {% if form.risk_tolerance.value == 'medium' %}active{% endif %}" data-value="medium">
+                                            <div class="risk-icon medium">
+                                                <i class="fas fa-balance-scale"></i>
+                                            </div>
+                                            <div class="risk-info">
+                                                <h4>Trung bình</h4>
+                                                <p>Cân bằng rủi ro và lợi nhuận</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="risk-option {% if form.risk_tolerance.value == 'high' %}active{% endif %}" data-value="high">
+                                            <div class="risk-icon high">
+                                                <i class="fas fa-rocket"></i>
+                                            </div>
+                                            <div class="risk-info">
+                                                <h4>Cao</h4>
+                                                <p>Chấp nhận rủi ro để tìm kiếm lợi nhuận cao</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if form.risk_tolerance.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in form.risk_tolerance.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <a href="{% url 'portfolio_list' %}" class="btn-cancel">
+                                    <i class="fas fa-times"></i>
+                                    <span>Hủy bỏ</span>
+                                </a>
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas {% if form.instance.pk %}fa-save{% else %}fa-plus-circle{% endif %}"></i>
+                                    <span>{% if form.instance.pk %}Cập nhật{% else %}Tạo mới{% endif %}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Hướng dẫn -->
+                    <div class="guide-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="guide-header">
+                            <div class="guide-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3 class="guide-title">Hướng dẫn</h3>
+                        </div>
+                        
+                        <div class="guide-item">
+                            <h4>Tên danh mục</h4>
+                            <p>Đặt tên dễ nhớ, phản ánh chiến lược hoặc mục tiêu đầu tư</p>
+                            <div class="guide-example">
+                                <span class="label">Ví dụ:</span> Danh mục tăng trưởng dài hạn, Danh mục cổ tức
+                            </div>
+                        </div>
+                        
+                        <div class="guide-item">
+                            <h4>Mục tiêu đầu tư</h4>
+                            <p>Xác định rõ mục đích để định hướng chiến lược đầu tư</p>
+                            <div class="guide-example">
+                                <span class="label">Ví dụ:</span> Tăng trưởng vốn dài hạn, Thu nhập cổ tức
+                            </div>
+                        </div>
+                        
+                        <div class="guide-item">
+                            <h4>Mức độ rủi ro</h4>
+                            <p>Chọn mức độ phù hợp với khẩu vị rủi ro và tình hình tài chính</p>
+                        </div>
+                    </div>
+                    
+                    {% if form.instance.pk %}
+                    <!-- Thông tin danh mục khi chỉnh sửa -->
+                    <div class="summary-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="summary-header">
+                            <div class="summary-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <h3 class="summary-title">Tóm tắt danh mục</h3>
+                        </div>
+                        
+                        <div class="summary-content">
+                            <div class="summary-item">
+                                <div class="item-label">Ngày tạo</div>
+                                <div class="item-value">{{ form.instance.created_at|date:"d/m/Y" }}</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="item-label">Số lượng tài sản</div>
+                                <div class="item-value">{{ form.instance.assets.count|default:"0" }} tài sản</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="item-label">Tổng giá trị</div>
+                                <div class="item-value highlight-value">{{ form.instance.total_value|default:"0"|floatformat:0 }} VNĐ</div>
+                            </div>
+                            
+                            <a href="{% url 'portfolio_detail' pk=form.instance.pk %}" class="summary-link">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --secondary: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --gray: #64748b;
+    --border-color: #e2e8f0;
+}
+
+/* Layout trang */
+.portfolio-form-page {
+    background-color: #f8fafc;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Header */
+.form-header {
+    background: linear-gradient(120deg, #4f46e5, #6366f1);
+    padding: 60px 0 100px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb {
+    background: rgba(255, 255, 255, 0.15);
+    display: inline-flex;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: white;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.form-title .highlight {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+.form-title .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-color: rgba(16, 185, 129, 0.4);
+    z-index: -1;
+    transform: skewX(-10deg);
+}
+
+.header-shapes .shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.shape-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: 10%;
+}
+
+.shape-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    right: 20%;
+}
+
+.shape-3 {
+    width: 150px;
+    height: 150px;
+    top: 50%;
+    left: 10%;
+}
+
+/* Form Content */
+.form-content {
+    margin-top: -50px;
+    position: relative;
+    z-index: 3;
+    padding-bottom: 80px;
+}
+
+/* Main Form Card */
+.main-form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-indicator {
+    position: absolute;
+    top: 0;
+    left: 30px;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.indicator-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.indicator-line {
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+    flex: 1;
+    margin-top: 1px;
+    opacity: 0.5;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-left: 2rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 1rem;
+    font-size: 1rem;
+}
+
+.section-title h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--dark);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    padding: 1.25rem 1rem;
+}
+
+.form-floating > label {
+    padding: 1rem;
+}
+
+.form-floating > textarea.form-control {
+    height: 120px;
+}
+
+.required-star {
+    color: var(--danger);
+}
+
+/* Risk Selector */
+.risk-selector {
+    margin-top: 1rem;
+}
+
+.risk-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.risk-option {
+    flex: 1;
+    min-width: 180px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.risk-option:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+}
+
+.risk-option.active {
+    border-color: var(--primary);
+    background-color: rgba(99, 102, 241, 0.03);
+    box-shadow: 0 8px 15px rgba(99, 102, 241, 0.1);
+}
+
+.risk-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.risk-icon.low {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--secondary);
+}
+
+.risk-icon.medium {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.risk-icon.high {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.risk-info h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--dark);
+}
+
+.risk-info p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-left: 2rem;
+}
+
+.btn-cancel, .btn-submit {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background-color: #f1f5f9;
+    color: var(--gray);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+.btn-cancel:hover {
+    background-color: #e2e8f0;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+}
+
+.btn-cancel i, .btn-submit i {
+    margin-right: 0.5rem;
+}
+
+/* Guide Card */
+.guide-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.guide-header {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.guide-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.guide-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.guide-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.guide-item:last-child {
+    border-bottom: none;
+}
+
+.guide-item h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+}
+
+.guide-item p {
+    color: var(--gray);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.guide-example {
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.guide-example .label {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Summary Card */
+.summary-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+.summary-header {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.summary-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.summary-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.summary-content {
+    padding: 1.5rem;
+}
+
+.summary-item {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+}
+
+.item-label {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 0.3rem;
+}
+
+.item-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.highlight-value {
+    color: var(--primary);
+}
+
+.summary-link {
+    display: block;
+    text-align: center;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    color: var(--primary);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.summary-link:hover {
+    background: #e2e8f0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .form-title {
+        font-size: 2rem;
+    }
+    
+    .risk-options {
+        flex-direction: column;
+    }
+    
+    .risk-option {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-header {
+        padding: 40px 0 80px;
+    }
+    
+    .form-title {
+        font-size: 1.8rem;
+    }
+    
+    .main-form-card {
+        padding: 1.5rem;
+    }
+    
+    .card-indicator {
+        left: 20px;
+    }
+    
+    .form-section {
+        padding-left: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-cancel, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Risk option selection
+    const riskOptions = document.querySelectorAll('.risk-option');
+    const riskInput = document.getElementById('id_risk_tolerance');
+    
+    riskOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove active class from all options
+            riskOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Add active class to selected option
+            this.classList.add('active');
+            
+            // Update hidden input value
+            riskInput.value = this.dataset.value;
+        });
+    });
+});
+</script>
+{% endblock %}

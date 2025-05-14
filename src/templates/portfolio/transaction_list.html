@@ -1,0 +1,179 @@
+{% extends 'portfolio/base.html' %}
+
+{% block title %}Lịch sử giao dịch | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="card-heading mb-3 mb-md-0">
+            <div class="card-heading-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h2 class="fw-bold mb-0">Lịch sử giao dịch</h2>
+        </div>
+        <a href="{% url 'transaction_create' %}" class="btn btn-primary btn-rounded" data-aos="fade-left">
+            <i class="fas fa-plus me-2"></i>Tạo giao dịch mới
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-body p-4">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select name="portfolio" class="form-select" id="portfolioSelect">
+                            <option value="">Tất cả danh mục</option>
+                            {% for p in portfolios %}
+                                <option value="{{ p.id }}" {% if request.GET.portfolio == p.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ p.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label for="portfolioSelect">Danh mục</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <select name="type" class="form-select" id="typeSelect">
+                            <option value="">Tất cả loại</option>
+                            <option value="buy" {% if request.GET.type == 'buy' %}selected{% endif %}>Mua</option>
+                            <option value="sell" {% if request.GET.type == 'sell' %}selected{% endif %}>Bán</option>
+                        </select>
+                        <label for="typeSelect">Loại giao dịch</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" name="from_date" class="form-control" id="fromDate" value="{{ request.GET.from_date }}">
+                        <label for="fromDate">Từ ngày</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="date" name="to_date" class="form-control" id="toDate" value="{{ request.GET.to_date }}">
+                        <label for="toDate">Đến ngày</label>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100 h-100 btn-rounded">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" data-aos="fade-up">
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0 ps-4">Danh mục</th>
+                            <th class="border-0">Mã CP</th>
+                            <th class="border-0">Loại GD</th>
+                            <th class="border-0 text-end">Số lượng</th>
+                            <th class="border-0 text-end">Giá</th>
+                            <th class="border-0 text-end">Tổng giá trị</th>
+                            <th class="border-0">Thời gian</th>
+                            <th class="border-0 pe-4">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td class="ps-4">{{ transaction.portfolio.name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle me-2">
+                                        <i class="fas fa-chart-line text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ transaction.asset.symbol }}</h6>
+                                        <small class="text-muted">{{ transaction.asset.name }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if transaction.transaction_type == 'buy' %}success{% else %}danger{% endif %} rounded-pill">
+                                    {{ transaction.get_transaction_type_display }}
+                                </span>
+                            </td>
+                            <td class="text-end">{{ transaction.quantity }}</td>
+                            <td class="text-end">{{ transaction.price|floatformat:0 }}</td>
+                            <td class="text-end fw-medium">{{ transaction.total_amount|floatformat:0 }}</td>
+                            <td>{{ transaction.transaction_date|date:"d/m/Y H:i" }}</td>
+                            <td class="pe-4">
+                                {% if transaction.notes %}
+                                <span class="text-muted" data-bs-toggle="tooltip" title="{{ transaction.notes }}">
+                                    {{ transaction.notes|truncatechars:20 }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png" alt="No transactions" class="img-fluid mb-4" style="max-width: 150px; opacity: 0.7;">
+                <h5>Chưa có giao dịch nào</h5>
+                <p class="text-muted">Bắt đầu giao dịch để theo dõi lịch sử của bạn</p>
+                <a href="{% url 'transaction_create' %}" class="btn btn-primary btn-rounded px-4 mt-2">
+                    <i class="fas fa-plus me-2"></i>Tạo giao dịch mới
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if transactions.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4" data-aos="fade-up" data-aos-delay="100">
+        <ul class="pagination justify-content-center">
+            {% if transactions.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-start" href="?page={{ transactions.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in transactions.paginator.page_range %}
+            {% if transactions.number == i %}
+            <li class="page-item active">
+                <span class="page-link">{{ i }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if transactions.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-end" href="?page={{ transactions.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

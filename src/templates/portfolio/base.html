@@ -1,0 +1,1331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if request.user.is_authenticated %}
+    <meta name="username" content="{{ request.user.username }}">
+    <meta name="user-full-name" content="{% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}">
+    {% endif %}
+    <title>{% block title %}ASTROLUX - Quản lý đầu tư chứng khoán{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'portfolio/img/favicon.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'portfolio/img/favicon.png' %}">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'portfolio/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'portfolio/css/chat-animations.css' %}">
+    <link rel="apple-touch-icon" sizes="57x57" href="{% static 'portfolio/img/apple-icon-57x57.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'portfolio/img/apple-icon-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'portfolio/img/apple-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'portfolio/img/apple-icon-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'portfolio/img/apple-icon-114x114.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'portfolio/img/apple-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'portfolio/img/apple-icon-144x144.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'portfolio/img/apple-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'portfolio/img/apple-icon-180x180.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192"  href="{% static 'portfolio/img/android-icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'portfolio/img/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'portfolio/img/favicon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'portfolio/img/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'portfolio/img/manifest.json' %}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{% static 'portfolio/img/ms-icon-144x144.png' %}">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+        :root {
+            --primary-color: #7e57c2;
+            --primary-dark: #5e35b1;
+            --primary-light: #f3e5f5;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #03a9f4;
+            --body-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #616161;
+            --border-color: #e0e0e0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --shadow-xl: 0 12px 32px rgba(0,0,0,0.12);
+            --transition-base: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --font-family-base: 'Open Sans', sans-serif;
+            --font-family-heading: 'Montserrat', sans-serif;
+            --navbar-height: 4.5rem;
+            --navbar-bg: rgba(255, 255, 255, 0.95);
+            --navbar-shadow: 0 4px 20px rgba(126, 87, 194, 0.15);
+            --navbar-brand-size: 1.75rem;
+            --navbar-padding: 0.75rem 1.5rem;
+        }
+        
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--body-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            padding-top: var(--navbar-height);
+        }
+        
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: var(--font-family-heading);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        
+        .navbar-brand {
+            font-size: var(--navbar-brand-size);
+            letter-spacing: -0.5px;
+            font-weight: 700;
+            position: relative;
+            padding: 0.5rem 0;
+            color: var(--primary-dark);
+            transition: all 0.35s ease;
+        }
+        
+        .navbar-brand .logo-container {
+            position: relative;
+            transition: all 0.35s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .navbar-brand .logo-container::after {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(126, 87, 194, 0.15), transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+        
+        .navbar-brand:hover .logo-container::after {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+            color: var(--primary-color);
+        }
+        
+        .navbar-brand img {
+            transition: all 0.35s ease;
+            filter: drop-shadow(0 5px 15px rgba(126, 87, 194, 0.2));
+        }
+        
+        .navbar-brand:hover img {
+            transform: rotate(10deg) scale(1.1);
+            filter: drop-shadow(0 8px 25px rgba(126, 87, 194, 0.4));
+        }
+        
+        .navbar-brand span {
+            background: linear-gradient(to right, var(--primary-dark), var(--primary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            transition: all 0.35s ease;
+        }
+        
+        .navbar-brand span::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary-dark), var(--primary-color));
+            transition: all 0.35s ease;
+            opacity: 0;
+        }
+        
+        .navbar-brand:hover span::after {
+            width: 100%;
+            opacity: 0.8;
+        }
+        
+        .nav-link {
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            position: relative;
+            transition: all 0.35s ease;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            border-radius: var(--radius-md);
+            margin: 0 0.15rem;
+            letter-spacing: 0.01em;
+            z-index: 1;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0.25rem;
+            left: 1.25rem;
+            right: 1.25rem;
+            height: 0;
+            background-color: rgba(126, 87, 194, 0.08);
+            border-radius: 3px;
+            transition: all 0.35s ease;
+            z-index: -1;
+        }
+        
+        .nav-link.active::before, 
+        .nav-link:hover::before {
+            height: 6px;
+        }
+        
+        .nav-link.active, 
+        .nav-link:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link.active::after {
+            display: none;
+        }
+        
+        .nav-link .fas, 
+        .nav-link .far {
+            font-size: 0.9rem;
+            transition: all 0.35s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover .fas, 
+        .nav-link:hover .far,
+        .nav-link.active .fas, 
+        .nav-link.active .far {
+            transform: translateY(-2px);
+            color: var(--primary-color);
+        }
+        
+        .navbar-toggler {
+            border: none;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background-color: rgba(126, 87, 194, 0.08);
+            transition: all 0.35s ease;
+        }
+        
+        .navbar-toggler:hover {
+            background-color: rgba(126, 87, 194, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.25rem rgba(126, 87, 194, 0.25);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%237e57c2' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+            width: 1.5em;
+            height: 1.5em;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 8px 30px rgba(94, 53, 177, 0.15);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem;
+            margin-top: 1rem;
+            animation: dropdownFadeIn 0.3s ease;
+            border: 1px solid rgba(126, 87, 194, 0.08);
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-item {
+            padding: 0.85rem 1.5rem;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .dropdown-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(to right, rgba(126, 87, 194, 0.08), transparent);
+            transition: all 0.35s ease;
+            z-index: -1;
+        }
+        
+        .dropdown-item:hover::before {
+            width: 100%;
+        }
+        
+        .dropdown-item:hover {
+            background-color: transparent;
+            transform: translateX(5px);
+        }
+        
+        .dropdown-item .fas, 
+        .dropdown-item .far {
+            transition: all 0.35s ease;
+            width: 22px;
+            text-align: center;
+        }
+        
+        .dropdown-item:hover .fas, 
+        .dropdown-item:hover .far {
+            transform: scale(1.1);
+        }
+        
+        .dropdown-divider {
+            margin: 0.75rem 0;
+            opacity: 0.1;
+            border-color: var(--primary-color);
+        }
+        
+        .nav-item.dropdown .dropdown-toggle::after {
+            border-top: 0.3em solid var(--primary-color);
+            transition: all 0.35s ease;
+            vertical-align: middle;
+            margin-left: 0.5em;
+        }
+        
+        .nav-item.dropdown:hover .dropdown-toggle::after {
+            transform: rotate(180deg);
+        }
+        
+        .avatar-container {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s ease;
+        }
+        
+        .avatar-container:hover img,
+        .avatar-container:hover .icon-circle {
+            transform: scale(1.1);
+        }
+        
+        .nav-link.btn.btn-primary {
+            color: white !important;
+            padding: 0.6rem 1.5rem !important;
+            margin-left: 0.5rem;
+            box-shadow: 0 5px 15px rgba(94, 53, 177, 0.3);
+        }
+        
+        .nav-link.btn.btn-primary:hover {
+            box-shadow: 0 8px 25px rgba(94, 53, 177, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .icon-circle {
+            transition: all 0.35s ease;
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.2);
+        }
+        
+        .navbar {
+            box-shadow: var(--navbar-shadow);
+            background-color: var(--navbar-bg) !important;
+            padding: var(--navbar-padding);
+            height: var(--navbar-height);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            transition: all 0.35s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(126, 87, 194, 0.08);
+        }
+        
+        .navbar.scrolled {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            box-shadow: 0 5px 30px rgba(94, 53, 177, 0.2);
+            background-color: rgba(255, 255, 255, 0.98) !important;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-base);
+            background-color: var(--card-bg);
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn {
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-base);
+            text-transform: none;
+            box-shadow: var(--shadow-sm);
+            letter-spacing: 0.01em;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover, 
+        .btn-primary:focus {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.4);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.3);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            color: white;
+        }
+        
+        .rounded-4 {
+            border-radius: var(--radius-lg) !important;
+        }
+        
+        .rounded-5 {
+            border-radius: var(--radius-xl) !important;
+        }
+        
+        .btn-rounded {
+            border-radius: 50px;
+        }
+        
+        .badge {
+            padding: 0.5em 0.75em;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            border-radius: 6px;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+        }
+        
+        .bg-success {
+            background-color: var(--success-color) !important;
+        }
+        
+        .bg-danger {
+            background-color: var(--danger-color) !important;
+        }
+        
+        .bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+        
+        .bg-light {
+            background-color: var(--primary-light) !important;
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        .text-success {
+            color: var(--success-color) !important;
+        }
+        
+        .text-danger {
+            color: var(--danger-color) !important;
+        }
+        
+        .text-warning {
+            color: var(--warning-color) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: rgba(126, 87, 194, 0.08);
+        }
+        
+        .table th, .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            transition: var(--transition-base);
+        }
+        
+        .icon-circle:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-light {
+            background-color: #fff;
+            border-color: #ddd;
+        }
+        
+        .btn-light:hover {
+            background-color: #f8f9fa;
+            border-color: #ddd;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .ai-chat-button {
+            background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%);
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.4);
+            transition: all 0.3s ease;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            border: none;
+        }
+        
+        .ai-chat-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(126, 87, 194, 0.5);
+        }
+        
+        .ai-chat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+        }
+        
+        .ai-chat-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), transparent 70%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-chat-button:hover .ai-chat-icon::after {
+            opacity: 1;
+        }
+        
+        .ai-chat-icon img {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(94, 53, 177, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .ai-chat-button:hover .ai-chat-icon img {
+            transform: scale(1.1) rotate(5deg);
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Pulse animation for chat button */
+        .pulse-animation {
+            animation: pulse-button 2s infinite;
+        }
+        
+        @keyframes pulse-button {
+            0% {
+                box-shadow: 0 0 0 0 rgba(126, 87, 194, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(126, 87, 194, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(126, 87, 194, 0);
+            }
+        }
+        
+        /* Styling for the chat popup */
+        .chatbot-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            margin-right: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chatbot-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-header:hover .chatbot-avatar img {
+            transform: scale(1.1);
+        }
+        
+        footer {
+            background: linear-gradient(135deg, #4a148c 0%, #7b1fa2 100%);
+            color: #fff;
+            padding: 4rem 0 2rem;
+            margin-top: 6rem;
+        }
+        
+        footer a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition-base);
+        }
+        
+        footer a:hover {
+            color: #fff;
+            transform: translateX(3px);
+        }
+        
+        .page-transition {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stat-card {
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            height: 100%;
+            border-left: 5px solid transparent;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-base);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card-value {
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-card-portfolio {
+            border-left-color: var(--primary-color);
+        }
+        
+        .stat-card-assets {
+            border-left-color: var(--success-color);
+        }
+        
+        .stat-card-value {
+            border-left-color: var(--warning-color);
+        }
+        
+        .stat-card-transactions {
+            border-left-color: var(--info-color);
+        }
+        
+        /* Price colors for market */
+        .price-up {
+            color: #4CAF50 !important; /* Green */
+            font-weight: bold;
+        }
+        
+        .price-down {
+            color: #F44336 !important; /* Red */
+            font-weight: bold;
+        }
+        
+        .price-ceiling {
+            color: #9333ea !important; /* Purple */
+            font-weight: bold;
+        }
+        
+        .price-floor {
+            color: #0891b2 !important; /* Blue */
+            font-weight: bold;
+        }
+        
+        .price-reference {
+            color: #f59e0b !important; /* Orange */
+        }
+        
+        /* Profit and Loss specific styling */
+        .profit-value {
+            color: #4CAF50 !important; /* Green */
+            font-weight: bold;
+        }
+        
+        .loss-value {
+            color: #F44336 !important; /* Red */
+            font-weight: bold;
+        }
+        
+        /* Special colors for percentage changes */
+        .text-profit {
+            color: #4CAF50 !important;
+        }
+        
+        .text-loss {
+            color: #F44336 !important;
+        }
+        
+        /* Nâng cao chất lượng UI */
+        .navbar-nav .nav-item {
+            margin: 0 2px;
+        }
+        
+        .navbar-nav .nav-link {
+            border-radius: 6px;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(126, 87, 194, 0.08);
+        }
+        
+        @keyframes navbarSlideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .navbar-animation-down {
+            animation: navbarSlideDown 0.5s ease forwards;
+        }
+        
+        .nav-item.has-notification {
+            position: relative;
+        }
+        
+        .nav-item.has-notification::after {
+            content: '';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+            }
+            100% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+            }
+        }
+        
+        /* Custom chat widget styles - Enhanced */
+        #aiChatPopup {
+            width: 420px;
+            height: 600px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #4c1d95 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 18px 20px;
+        }
+        
+        .chat-messages {
+            padding: 20px;
+            height: calc(100% - 180px);
+            background-color: #f8f9fa;
+        }
+        
+        .message-container {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-container {
+            align-items: flex-end;
+        }
+        
+        .ai-container {
+            align-items: flex-start;
+        }
+        
+        .message-content {
+            padding: 12px 18px;
+            max-width: 85%;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background-color: #2563eb;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+        
+        .ai-message {
+            background-color: #ffffff;
+            color: #333;
+            border-radius: 18px 18px 18px 0;
+            line-height: 1.5;
+        }
+        
+        .message-content p {
+            margin-bottom: 8px;
+        }
+        
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Đơn giản hóa các thẻ định dạng */
+        .ai-message strong {
+            color: #5b21b6;
+            font-weight: bold;
+        }
+        
+        .ai-message ul, 
+        .ai-message ol {
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .ai-message li {
+            margin-bottom: 4px;
+        }
+        
+        /* Đơn giản hóa card styles */
+        .ai-message .card-info,
+        .ai-message .card-warning,
+        .ai-message .card-success {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 10px;
+            border-left: 3px solid;
+            background-color: #f8f9fa;
+        }
+        
+        .ai-message .card-info {
+            border-left-color: #3b82f6;
+        }
+        
+        .ai-message .card-warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .ai-message .card-success {
+            border-left-color: #10b981;
+        }
+        
+        /* Media query for mobile devices */
+        @media (max-width: 576px) {
+            #aiChatPopup {
+                width: 92%;
+                max-width: 400px;
+                height: 85vh;
+                right: 4%;
+                left: auto;
+                bottom: 80px;
+            }
+            
+            .ai-message, .user-message {
+                max-width: 90%;
+            }
+        }
+        
+        /* Phần CSS cho suggested-questions và chat-input */
+        .suggested-questions {
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .suggested-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .suggested-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .suggested-item {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            background-color: #fff;
+            border-radius: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .suggested-item:hover {
+            background-color: #ede9fe;
+            transform: translateY(-2px);
+        }
+        
+        .chat-input {
+            padding: 12px 15px;
+            background-color: #fff;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        #userMessage {
+            border-radius: 24px;
+            padding: 12px 18px;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 15px;
+        }
+        
+        .send-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(91, 33, 182, 0.2);
+            background-color: #5b21b6;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .send-button:hover {
+            background-color: #4c1d95;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 33, 182, 0.3);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <div class="logo-container me-2">
+                    <img src="{% static 'portfolio/img/Rocket_Big.png' %}" alt="Logo" style="width: 40px; height: 40px;">
+                </div>
+                <span>ASTROLUX</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i> Bảng điều khiển
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/portfolios/' in request.path %}active{% endif %}" href="{% url 'portfolio_list' %}">
+                            <i class="fas fa-folder me-1"></i> Danh mục
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/assets/' in request.path %}active{% endif %}" href="{% url 'asset_list' %}">
+                            <i class="fas fa-chart-bar me-1"></i> Tài sản
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/transactions/' in request.path %}active{% endif %}" href="{% url 'transaction_list' %}">
+                            <i class="fas fa-exchange-alt me-1"></i> Giao dịch
+                        </a>
+                    </li>
+                    <li class="nav-item has-notification">
+                        <a class="nav-link {% if '/wallet/' in request.path %}active{% endif %}" href="{% url 'wallet' %}">
+                            <i class="fas fa-wallet me-1"></i> Ví điện tử
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/market/' in request.path %}active{% endif %}" href="{% url 'market' %}">
+                            <i class="fas fa-chart-line me-1"></i> Thị trường
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <div class="avatar-container me-2">
+                                {% if user.get_profile_picture %}
+                                <img src="{{ user.get_profile_picture }}" alt="{{ user.username }}" 
+                                     class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid var(--primary-color);">
+                                {% else %}
+                                <div class="icon-circle bg-primary text-white">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <span class="fw-bold mb-0">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
+                            <li><a class="dropdown-item py-2" href="{% url 'user_profile' %}">
+                                <i class="fas fa-user-cog me-2 text-primary"></i>Tài khoản</a>
+                            </li>
+                            <li><a class="dropdown-item py-2" href="#">
+                                <i class="fas fa-cog me-2 text-primary"></i>Cài đặt</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2 text-danger"></i>Đăng xuất</a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white px-4 py-2 btn-rounded ms-2" href="{% url 'login' %}" style="background: linear-gradient(45deg, #7e57c2, #5e35b1); border: none; box-shadow: 0 4px 15px rgba(94, 53, 177, 0.3); font-weight: 600; transition: all 0.3s ease;">
+                            <i class="fas fa-rocket me-2"></i> Trải nghiệm ngay
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-transition">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <img src="{% static 'portfolio/img/Rocket_Big.png' %}" alt="Logo" class="me-2" style="width: 32px; height: 32px;">
+                        ASTROLUX
+                    </h5>
+                    <p class="mb-3 pe-lg-4">Hệ thống quản lý danh mục đầu tư chứng khoán hiện đại giúp bạn theo dõi và tối ưu hóa tài sản đầu tư.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle p-2">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle p-2">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle p-2">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="mb-3">Liên kết</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="mb-2"><a href="{% url 'dashboard' %}">Bảng điều khiển</a></li>
+                        <li class="mb-2"><a href="{% url 'portfolio_list' %}">Danh mục</a></li>
+                        <li class="mb-2"><a href="{% url 'asset_list' %}">Tài sản</a></li>
+                        <li class="mb-2"><a href="{% url 'wallet' %}">Ví điện tử</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="mb-3">Tài nguyên</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#">Hướng dẫn</a></li>
+                        <li class="mb-2"><a href="#">FAQ</a></li>
+                        <li class="mb-2"><a href="#">Blog</a></li>
+                        <li class="mb-2"><a href="#">Hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-3">Nhận thông báo</h6>
+                    <p class="mb-3">Đăng ký nhận thông báo về thị trường và cập nhật mới.</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Email của bạn">
+                        <button class="btn btn-primary" type="button">Đăng ký</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3 border-top border-secondary">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2025 ASTROLUX. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a href="#">Điều khoản sử dụng</a></li>
+                        <li class="list-inline-item">·</li>
+                        <li class="list-inline-item"><a href="#">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
+    <script src="{% static 'portfolio/js/chat.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- Chat Widget -->
+    <div class="chat-widget-container" id="chatContainer">
+        <div class="ai-chat-popup" id="aiChatPopup">
+            <div class="chat-header">
+                <div class="d-flex align-items-center">
+                    <div class="chatbot-avatar me-2">
+                        <img src="{% static 'portfolio/img/astrobot.jpg' %}" alt="AstroBot" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 10px rgba(94, 53, 177, 0.3);">
+                    </div>
+                    <div>
+                        <h5 class="mb-0">AstroBot</h5>
+                        <div class="status-indicator">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-light rounded-circle" id="minimizeChat">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light rounded-circle" id="closeChat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <!-- Tin nhắn sẽ được thêm động qua JavaScript -->
+            </div>
+            <div class="suggested-questions" id="suggestedQuestions">
+                <h6 class="suggested-title">Câu hỏi gợi ý:</h6>
+                <div class="suggested-items">
+                    <button class="suggested-item" data-question="Tôi cần mua cổ phiếu ở đâu?">
+                        <i class="fas fa-question-circle me-2"></i>Tôi cần mua cổ phiếu ở đâu?
+                    </button>
+                    <button class="suggested-item" data-question="Tôi nên đầu tư vào cổ phiếu ngành nào ở Việt Nam?">
+                        <i class="fas fa-question-circle me-2"></i>Tôi nên đầu tư vào ngành nào?
+                    </button>
+                    <button class="suggested-item" data-question="Làm thế nào để phân tích một cổ phiếu?">
+                        <i class="fas fa-question-circle me-2"></i>Cách phân tích cổ phiếu?
+                    </button>
+                    <button class="suggested-item" data-question="Chỉ số P/E là gì?">
+                        <i class="fas fa-question-circle me-2"></i>Chỉ số P/E là gì?
+                    </button>
+                </div>
+            </div>
+            <div class="chat-input">
+                <form id="chatForm">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="userMessage" placeholder="Nhập câu hỏi của bạn..." autocomplete="off">
+                        <button class="btn btn-primary send-button" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <button class="ai-chat-button" id="aiChatButton">
+            <div class="ai-chat-icon">
+                <img src="{% static 'portfolio/img/astrobot.jpg' %}" alt="AstroBot" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+            </div>
+            <span class="ai-chat-indicator"></span>
+        </button>
+    </div>
+    
+    <!-- Script để hiển thị chat popup khi click vào nút -->
+    <script>
+        // Thêm function kiểm tra khi trang tải xong
+        document.addEventListener('DOMContentLoaded', function() {
+            const aiChatButton = document.getElementById('aiChatButton');
+            const aiChatPopup = document.getElementById('aiChatPopup');
+            
+            // Đảm bảo nút chat hiển thị đúng cách
+            if (aiChatButton && aiChatPopup) {
+                aiChatButton.style.display = 'flex';
+                aiChatPopup.style.display = 'none';
+                
+                console.log("Chat elements initialized");
+            }
+        });
+    </script>
+
+    <!-- Script để xử lý hiệu ứng thanh navbar khi cuộn -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+            let lastScrollTop = 0;
+            
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Thêm class 'scrolled' khi cuộn xuống
+                if (scrollTop > 10) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                // Hiệu ứng ẩn/hiện thanh navbar khi cuộn
+                if (scrollTop > lastScrollTop && scrollTop > 150) {
+                    // Cuộn xuống
+                    navbar.style.transform = 'translateY(-100%)';
+                } else {
+                    // Cuộn lên
+                    navbar.style.transform = 'translateY(0)';
+                    navbar.classList.add('navbar-animation-down');
+                    
+                    // Xóa class animation sau khi hoàn thành
+                    setTimeout(() => {
+                        navbar.classList.remove('navbar-animation-down');
+                    }, 500);
+                }
+                
+                lastScrollTop = scrollTop;
+            });
+        });
+    </script>
+</body>
+</html>

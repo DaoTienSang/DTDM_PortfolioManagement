@@ -1,0 +1,103 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block title %}Xóa tài khoản ngân hàng | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4" data-aos="fade-right">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Bảng điều khiển</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'wallet' %}">Ví điện tử</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bank_account_list' %}">Tài khoản ngân hàng</a></li>
+            <li class="breadcrumb-item active">Xóa tài khoản</li>
+        </ol>
+    </nav>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading">Thông báo</h6>
+                        <p class="mb-0">{{ message|safe }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up">
+                <div class="card-header border-0 p-4">
+                    <div class="card-heading">
+                        <div class="card-heading-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h4 class="mb-0">Xóa tài khoản ngân hàng</h4>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning rounded-4 mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading">Cảnh báo</h6>
+                                <p class="mb-0">Bạn có chắc chắn muốn xóa tài khoản ngân hàng này? Hành động này không thể hoàn tác.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border rounded-4 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">Thông tin tài khoản</h5>
+                            <div class="mb-3 d-flex">
+                                <div class="bank-logo me-3">
+                                    <div class="icon-circle" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa;">
+                                        <i class="fas fa-university text-primary fa-lg"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold">
+                                        {% if bank_account.bank_name == 'other' %}
+                                            {{ bank_account.other_bank_name }}
+                                        {% else %}
+                                            {{ bank_account.get_bank_name_display }}
+                                        {% endif %}
+                                        {% if bank_account.is_default %}<span class="badge bg-success ms-2">Mặc định</span>{% endif %}
+                                    </h6>
+                                    <div class="text-monospace fw-medium">{{ bank_account.account_number }}</div>
+                                    <div class="text-muted">{{ bank_account.account_name }}</div>
+                                    {% if bank_account.branch %}
+                                    <div class="small text-muted">Chi nhánh: {{ bank_account.branch }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-danger mb-4"><strong>Lưu ý:</strong> Xóa tài khoản ngân hàng có thể ảnh hưởng đến các giao dịch trong tương lai.</p>
+                    
+                    <form method="post" class="mt-3">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'bank_account_list' %}" class="btn btn-light btn-rounded">
+                                <i class="fas fa-times me-2"></i>Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-rounded">
+                                <i class="fas fa-trash me-2"></i>Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

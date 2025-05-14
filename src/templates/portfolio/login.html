@@ -1,0 +1,51 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Đăng nhập | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="text-center mb-4">
+                <i class="fas fa-chart-line text-primary fa-3x mb-3"></i>
+                <h2 class="fw-bold">Chào mừng trở lại</h2>
+                <p class="text-muted">Đăng nhập để tiếp tục với tài khoản của bạn</p>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up">
+                <div class="card-body p-4 p-sm-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="text-center mb-4">
+                        <img src="{% static 'portfolio/img/auth0-logo.png' %}" alt="Auth0" style="height: 40px;" onerror="this.src='https://cdn.auth0.com/website/assets/pages/about/logos/auth0-logo-59f0f8b0a5e8811828681619606b8c3c9b4284f57e5dc4c75f6572c69c59d716.svg'; this.onerror=null;">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <a href="{% url 'login' %}" class="btn btn-primary w-100 btn-rounded py-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập với Auth0
+                        </a>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted small">Auth0 cung cấp một cổng đăng nhập an toàn và tiện lợi</p>
+                    </div>
+                    
+                    <p class="text-center mb-0 mt-4">
+                        Chưa có tài khoản? <a href="{% url 'register' %}" class="text-primary fw-medium">Đăng ký ngay</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted small">Bằng cách đăng nhập, bạn đồng ý với <a href="#" class="text-primary">Điều khoản sử dụng</a> và <a href="#" class="text-primary">Chính sách bảo mật</a> của chúng tôi.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Đăng ký tài khoản | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-plus text-primary fa-3x mb-3"></i>
+                <h2 class="fw-bold">Tạo tài khoản mới</h2>
+                <p class="text-muted">Đăng ký để bắt đầu quản lý danh mục đầu tư của bạn</p>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up">
+                <div class="card-body p-4 p-sm-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="text-center mb-4">
+                        <img src="{% static 'portfolio/img/auth0-logo.png' %}" alt="Auth0" style="height: 40px;" onerror="this.src='https://cdn.auth0.com/website/assets/pages/about/logos/auth0-logo-59f0f8b0a5e8811828681619606b8c3c9b4284f57e5dc4c75f6572c69c59d716.svg'; this.onerror=null;">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <a href="{% url 'register' %}" class="btn btn-primary w-100 btn-rounded py-3">
+                            <i class="fas fa-user-plus me-2"></i>Đăng ký với Auth0
+                        </a>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted small">Auth0 cung cấp một cổng đăng ký an toàn và tiện lợi</p>
+                    </div>
+                    
+                    <p class="text-center mb-0 mt-4">
+                        Đã có tài khoản? <a href="{% url 'login' %}" class="text-primary fw-medium">Đăng nhập</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted small">Bằng cách đăng ký, bạn đồng ý nhận email về các cập nhật và thông tin liên quan đến tài khoản của bạn.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

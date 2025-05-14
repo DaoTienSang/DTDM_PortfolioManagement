@@ -1,0 +1,61 @@
+/* Bank account styles */
+.form-check .card.selected {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check .card:hover {
+    transform: translateY(-3px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+    border-width: 2px !important;
+    border-color: #dee2e6 !important;
+}
+
+.border-dashed:hover {
+    border-color: var(--bs-primary) !important;
+}
+
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: var(--bs-primary);
+    font-size: 1rem;
+}
+
+/* Payment method styles */
+.payment-option-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.payment-option-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.payment-option-card.selected {
+    border-color: var(--bs-primary);
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* QR code styles */
+.qrcode-container {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    max-width: 200px;
+    margin: 0 auto;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+} 

@@ -1,0 +1,1676 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <div class="position-relative mb-5">
+        <div class="hero-bg" style="background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; transform: skewY(-3deg); transform-origin: top left;"></div>
+        <div class="container py-5">
+            <div class="row py-5 align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="display-4 fw-bold mb-4 text-white">Quản lý đầu tư chứng khoán thông minh</h1>
+                    <p class="lead mb-4 pe-lg-5 text-white opacity-90">Theo dõi, phân tích và quản lý danh mục đầu tư của bạn với công cụ trực quan, toàn diện và dễ sử dụng.</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg btn-rounded text-primary shadow-lg">
+                        <i class="fas fa-chart-line me-2"></i>Xem danh mục của bạn
+                    </a>
+                    {% else %}
+                    <div class="d-flex">
+                        <a href="{% url 'login' %}" class="btn btn-light btn-lg btn-rounded text-primary shadow btn-glow">
+                            <i class="fas fa-rocket me-2"></i>Trải nghiệm ngay
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-lg-6 mt-5 mt-lg-0" data-aos="fade-left">
+                    <div class="hero-image-wrapper text-center">
+                        <div class="img-container bg-white rounded-circle shadow-lg floating-3d-container">
+                            <div class="animated-background"></div>
+                            <div class="glowing-border"></div>
+                            <div class="cosmic-particles"></div>
+                            <div class="orbital-ring"></div>
+                            <div class="orbital-ring orbital-ring-2"></div>
+                            <div class="glow-circle-wrapper">
+                                <div class="glow-circle"></div>
+                            </div>
+                            <img src="{% static 'portfolio/img/Rocket.png' %}" alt="Stock Portfolio" class="img-fluid mx-auto d-block floating-image">
+                            <div class="floating-particles"></div>
+                            <div class="glow-effect"></div>
+                            <div class="pulse-ring"></div>
+                            <div class="animated-stars"></div>
+                        </div>
+                        <div class="text-center mt-3 subtext-hero d-none d-md-block">
+                            <span class="badge bg-white text-primary px-3 py-2 shadow-sm">Đồ họa trực quan</span>
+                            <span class="badge bg-white text-primary px-3 py-2 shadow-sm ms-2">Theo dõi thời gian thực</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wave Separator -->
+        <div class="position-absolute bottom-0 left-0 w-100 overflow-hidden wave-container" style="transform: translateY(1px);">
+            <!-- Lớp sóng thứ nhất (phía sau) -->
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto" style="width: 100%; height: 90px;">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="wave-parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(248, 249, 250, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(248, 249, 250, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(248, 249, 250, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#f8f9fa" />
+                </g>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="badge bg-primary text-white px-3 py-2 mb-3">Tính năng</span>
+            <h2 class="fw-bold mb-3">Tính năng nổi bật</h2>
+            <p class="text-muted col-lg-8 mx-auto">Hệ thống quản lý danh mục đầu tư ASTROLUX cung cấp đầy đủ công cụ để bạn theo dõi và tối ưu hóa đầu tư của mình.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100 hover-lift rounded-4 feature-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle mx-auto mb-3">
+                            <i class="fas fa-chart-pie fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Quản lý danh mục</h5>
+                        <p class="text-muted">Tạo và quản lý nhiều danh mục đầu tư với các mục tiêu và chiến lược khác nhau.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100 hover-lift rounded-4 feature-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle mx-auto mb-3">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Theo dõi hiệu suất</h5>
+                        <p class="text-muted">Giám sát hiệu suất từng cổ phiếu và toàn bộ danh mục theo thời gian thực.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100 hover-lift rounded-4 feature-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle mx-auto mb-3">
+                            <i class="fas fa-exchange-alt fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Quản lý giao dịch</h5>
+                        <p class="text-muted">Ghi lại tất cả giao dịch mua, bán và theo dõi lịch sử chi tiết.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="card border-0 shadow-sm h-100 hover-lift rounded-4 feature-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle mx-auto mb-3">
+                            <i class="fas fa-chart-bar fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Phân tích thị trường</h5>
+                        <p class="text-muted">Xem thông tin thị trường và biểu đồ giá cổ phiếu để đưa ra quyết định đầu tư tốt nhất.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works -->
+    <div class="bg-light py-5 mt-5 position-relative">
+        <div class="container py-4">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <span class="badge bg-primary text-white px-3 py-2 mb-3">Hướng dẫn</span>
+                <h2 class="fw-bold mb-3">Cách thức hoạt động</h2>
+                <p class="text-muted col-lg-8 mx-auto">Chỉ với vài bước đơn giản để bắt đầu quản lý danh mục đầu tư của bạn</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden step-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4 step-circle" style="width: 60px; height: 60px;">
+                                <span class="fw-bold">1</span>
+                            </div>
+                            <h5 class="mb-3">Tạo tài khoản</h5>
+                            <p class="text-muted mb-0">Đăng ký tài khoản miễn phí và bắt đầu thiết lập hồ sơ đầu tư của bạn</p>
+                        </div>
+                        <div class="step-shape"></div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden step-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4 step-circle" style="width: 60px; height: 60px;">
+                                <span class="fw-bold">2</span>
+                            </div>
+                            <h5 class="mb-3">Tạo danh mục đầu tư</h5>
+                            <p class="text-muted mb-0">Thiết lập các danh mục đầu tư với mục tiêu và mức độ rủi ro phù hợp</p>
+                        </div>
+                        <div class="step-shape"></div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden step-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4 step-circle" style="width: 60px; height: 60px;">
+                                <span class="fw-bold">3</span>
+                            </div>
+                            <h5 class="mb-3">Theo dõi và tối ưu hóa</h5>
+                            <p class="text-muted mb-0">Giám sát hiệu suất và điều chỉnh danh mục đầu tư của bạn theo thời gian</p>
+                        </div>
+                        <div class="step-shape"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CTA Section -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0 fancy-card rounded-5" data-aos="fade-up">
+                    <div class="card-glow-effect"></div>
+                    <div class="card-border-effect"></div>
+                    <div class="card-shine-effect"></div>
+                    <div class="card-animated-bg"></div>
+                    <div class="row g-0 position-relative z-index-1 rounded-5">
+                        <div class="col-md-6">
+                            <div class="card-body p-5 cta-content rounded-start-5" style="background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%); height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                                <h2 class="fw-bold mb-4 text-white">Bắt đầu quản lý danh mục đầu tư của bạn ngay hôm nay</h2>
+                                <p class="mb-4 text-white opacity-90">Tham gia cùng hàng nghìn nhà đầu tư đang sử dụng ASTROLUX để theo dõi và tối ưu hóa hiệu suất đầu tư của họ.</p>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg btn-rounded text-primary shadow btn-glow">
+                                    <i class="fas fa-chart-line me-2"></i>Xem danh mục của bạn
+                                </a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-light btn-lg btn-rounded text-primary shadow btn-glow">
+                                    <i class="fas fa-rocket me-2"></i>Trải nghiệm ngay
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-none d-md-block rounded-end-5">
+                            <div class="team-section h-100">
+                                <div class="team-bg-effect"></div>
+                                <div class="team-glow-orbs">
+                                    <div class="orb orb-1"></div>
+                                    <div class="orb orb-2"></div>
+                                    <div class="orb orb-3"></div>
+                                </div>
+                                <h2 class="text-center team-title">Đội ngũ phát triển</h2>
+                                <div class="team-particles"></div>
+                                <div class="row justify-content-center team-grid">
+                                    <!-- Thành viên 1 -->
+                                    <div class="col-6">
+                                        <div class="team-member text-center" data-member="1">
+                                            <div class="team-avatar-wrapper">
+                                                <div class="team-avatar-3d-container">
+                                                    <img src="{% static 'portfolio/img/trung-Photoroom.png' %}" alt="Nguyễn Chí Trung" class="team-avatar-circle">
+                                                    <div class="team-avatar-glow"></div>
+                                                    <div class="team-avatar-shine"></div>
+                                                </div>
+                                            </div>
+                                            <h5 class="team-name">Nguyễn Chí Trung</h5>
+                                            <p class="team-role">- Anh Trung Vĩnh Long -</p>
+                                            <div class="member-skill-tags">
+                                                <span>Front-end( Tham khảo )</span>
+                                                <span>UI/UX ( Tham khảo )</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Thành viên 2 -->
+                                    <div class="col-6">
+                                        <div class="team-member text-center" data-member="2">
+                                            <div class="team-avatar-wrapper">
+                                                <div class="team-avatar-3d-container">
+                                                    <img src="{% static 'portfolio/img/huong-Photoroom.png' %}" alt="Hoan Xuân Hoàn" class="team-avatar-circle">
+                                                    <div class="team-avatar-glow"></div>
+                                                    <div class="team-avatar-shine"></div>
+                                                </div>
+                                            </div>
+                                            <h5 class="team-name">Kiều Trương Hàm Hương</h5>
+                                            <p class="team-role">- Bạn Hương Khánh Hòa -</p>
+                                            <div class="member-skill-tags">
+                                                <span>Back-end ( Tham khảo )</span>
+                                                <span>Database ( Tham khảo )</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Thành viên 3 -->
+                                    <div class="col-6">
+                                        <div class="team-member text-center" data-member="3">
+                                            <div class="team-avatar-wrapper">
+                                                <div class="team-avatar-3d-container">
+                                                    <img src="{% static 'portfolio/img/sangdao_info.png' %}" alt="Đào Tiến Sang" class="team-avatar-circle">
+                                                    <div class="team-avatar-glow"></div>
+                                                    <div class="team-avatar-shine"></div>
+                                                </div>
+                                            </div>
+                                            <h5 class="team-name">Đào Tiến Sang</h5>
+                                            <p class="team-role">- Anh Sang Đồng Nai -</p>
+                                            <div class="member-skill-tags">
+                                                <span>DevOps ( Tham khảo )</span>
+                                                <span>API ( Tham khảo )</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Thành viên 4 -->
+                                    <div class="col-6">
+                                        <div class="team-member text-center" data-member="4">
+                                            <div class="team-avatar-wrapper">
+                                                <div class="team-avatar-3d-container">
+                                                    <img src="{% static 'portfolio/img/kieu-Photoroom.png' %}" alt="Nguyễn Trường Vương" class="team-avatar-circle">
+                                                    <div class="team-avatar-glow"></div>
+                                                    <div class="team-avatar-shine"></div>
+                                                </div>
+                                            </div>
+                                            <h5 class="team-name">Nguyễn Thị Thúy Kiều</h5>
+                                            <p class="team-role">- Thúy Vân -</p>
+                                            <div class="member-skill-tags">
+                                                <span>Testing ( Tham khảo )</span>
+                                                <span>Security ( Tham khảo )</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .opacity-90 {
+        opacity: 0.9;
+    }
+    
+    /* Hero wrapper styles */
+    .hero-image-wrapper {
+        position: relative;
+        z-index: 1;
+        perspective: 1000px;
+    }
+    
+    .subtext-hero {
+        margin-top: -15px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .subtext-hero .badge {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(126, 87, 194, 0.1);
+    }
+    
+    .subtext-hero .badge:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(126, 87, 194, 0.2);
+    }
+    
+    /* Hiệu ứng hình ảnh 3D nâng cao */
+    .floating-3d-container {
+        position: relative;
+        width: 320px;
+        height: 320px;
+        margin: 0 auto;
+        transform-style: preserve-3d;
+        animation: container-float 15s ease-in-out infinite, container-breathe 8s ease-in-out infinite, container-rotate 30s linear infinite;
+        overflow: hidden;
+        background: radial-gradient(circle, #ffffff 0%, #f8f5ff 70%, #f0e6ff 100%);
+        border: 3px solid rgba(126, 87, 194, 0.15);
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @keyframes container-float {
+        0%, 100% {
+            transform: translateY(0) rotateX(5deg) rotateY(5deg);
+        }
+        50% {
+            transform: translateY(-15px) rotateX(-5deg) rotateY(-5deg);
+        }
+    }
+    
+    @keyframes container-rotate {
+        0% {
+            transform: rotateY(0) rotateX(0) translateY(0);
+        }
+        25% {
+            transform: rotateY(5deg) rotateX(3deg) translateY(-10px);
+        }
+        50% {
+            transform: rotateY(0) rotateX(0) translateY(0);
+        }
+        75% {
+            transform: rotateY(-5deg) rotateX(-3deg) translateY(-10px);
+        }
+        100% {
+            transform: rotateY(0) rotateX(0) translateY(0);
+        }
+    }
+    
+    @keyframes container-breathe {
+        0%, 100% {
+            box-shadow: 0 15px 35px rgba(94, 53, 177, 0.2), 0 0 20px rgba(126, 87, 194, 0.1);
+        }
+        50% {
+            box-shadow: 0 25px 50px rgba(94, 53, 177, 0.3), 0 0 30px rgba(126, 87, 194, 0.2);
+        }
+    }
+    
+    /* Hiệu ứng ảnh nổi nâng cao */
+    .floating-image {
+        animation: floating 6s ease-in-out infinite;
+        transition: all 0.5s ease;
+        filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.2));
+        position: relative;
+        z-index: 5;
+        max-width: 55%;
+        transform-style: preserve-3d;
+    }
+    
+    @keyframes floating {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg) scale(1);
+            filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.2)) brightness(1);
+        }
+        50% {
+            transform: translateY(-15px) rotate(5deg) scale(1.05);
+            filter: drop-shadow(0 30px 25px rgba(0, 0, 0, 0.25)) brightness(1.1);
+        }
+    }
+    
+    /* Hiệu ứng đường viền phát sáng */
+    .glowing-border {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: conic-gradient(
+            from 0deg,
+            rgba(126, 87, 194, 0.7), 
+            rgba(94, 53, 177, 0.4),
+            rgba(126, 87, 194, 0),
+            rgba(94, 53, 177, 0.5),
+            rgba(126, 87, 194, 0.7)
+        );
+        animation: border-rotate 8s linear infinite;
+        opacity: 0.7;
+        z-index: 2;
+    }
+    
+    @keyframes border-rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Hiệu ứng nền chuyển động */
+    .animated-background {
+        position: absolute;
+        inset: 0;
+        background: 
+            radial-gradient(circle at 30% 70%, rgba(126, 87, 194, 0.1) 0%, transparent 30%),
+            radial-gradient(circle at 70% 30%, rgba(94, 53, 177, 0.1) 0%, transparent 30%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
+        background-size: 250% 250%, 200% 200%, 200% 200%;
+        animation: background-pulse 15s ease infinite;
+        opacity: 0.8;
+        border-radius: inherit;
+        z-index: 1;
+    }
+    
+    @keyframes background-pulse {
+        0%, 100% {
+            background-position: 0% 0%, 0% 0%, 0% 0%;
+            transform: scale(1);
+        }
+        50% {
+            background-position: 100% 100%, 100% 0%, 50% 50%;
+            transform: scale(1.1);
+        }
+    }
+    
+    /* Hiệu ứng hạt nổi nâng cao */
+    .floating-particles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 3;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+    
+    .floating-particles::before,
+    .floating-particles::after {
+        content: '';
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: rgba(126, 87, 194, 0.5);
+        box-shadow: 0 0 10px rgba(126, 87, 194, 0.7), 0 0 20px rgba(126, 87, 194, 0.5);
+        animation: particle-float 8s ease-in-out infinite;
+        opacity: 0.7;
+    }
+    
+    .floating-particles::before {
+        top: 25%;
+        left: 25%;
+        animation-delay: 0s;
+    }
+    
+    .floating-particles::after {
+        top: 75%;
+        left: 75%;
+        animation-delay: 1s;
+    }
+    
+    @keyframes particle-float {
+        0%, 100% {
+            transform: translateY(0) translateX(0) scale(1);
+            opacity: 0.7;
+        }
+        50% {
+            transform: translateY(-40px) translateX(20px) scale(1.5);
+            opacity: 1;
+        }
+    }
+    
+    /* Hiệu ứng vũ trụ với nhiều hạt ánh sáng */
+    .cosmic-particles {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        overflow: hidden;
+        opacity: 1;
+        border-radius: inherit;
+    }
+    
+    .cosmic-particles::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 10% 10%, rgba(126, 87, 194, 0.4) 0%, transparent 20%),
+            radial-gradient(circle at 30% 35%, rgba(94, 53, 177, 0.4) 0%, transparent 15%),
+            radial-gradient(circle at 50% 50%, rgba(126, 87, 194, 0.3) 0%, transparent 30%),
+            radial-gradient(circle at 70% 25%, rgba(94, 53, 177, 0.4) 0%, transparent 15%),
+            radial-gradient(circle at 90% 85%, rgba(126, 87, 194, 0.4) 0%, transparent 20%),
+            radial-gradient(circle at 40% 80%, rgba(94, 53, 177, 0.4) 0%, transparent 15%),
+            radial-gradient(circle at 80% 60%, rgba(126, 87, 194, 0.4) 0%, transparent 15%);
+        background-blend-mode: screen;
+        animation: cosmic-pulse 15s ease-in-out infinite;
+    }
+    
+    @keyframes cosmic-pulse {
+        0%, 100% {
+            opacity: 0.6;
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.2) rotate(15deg);
+        }
+    }
+    
+    /* Hiệu ứng pulse ring */
+    .pulse-ring {
+        position: absolute;
+        inset: -5px;
+        border-radius: inherit;
+        border: 2px solid rgba(126, 87, 194, 0.5);
+        opacity: 0;
+        z-index: 1;
+        animation: pulse-effect 4s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+    }
+    
+    @keyframes pulse-effect {
+        0% {
+            opacity: 0.8;
+            transform: scale(0.95);
+        }
+        50%, 100% {
+            opacity: 0;
+            transform: scale(1.2);
+        }
+    }
+    
+    /* Thêm hiệu ứng quỹ đạo */
+    .orbital-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px dashed rgba(126, 87, 194, 0.3);
+        opacity: 0.8;
+        z-index: 2;
+        animation: orbital-rotate 20s linear infinite;
+    }
+    
+    .orbital-ring-2 {
+        width: 80%;
+        height: 80%;
+        animation-duration: 15s;
+        animation-direction: reverse;
+        border: 1px dashed rgba(126, 87, 194, 0.5);
+    }
+    
+    @keyframes orbital-rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Hiệu ứng vòng tròn phát sáng */
+    .glow-circle-wrapper {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+    
+    .glow-circle {
+        width: 85%;
+        height: 85%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 50%, transparent 70%);
+        opacity: 0.6;
+        animation: glow-pulse 5s ease-in-out infinite;
+    }
+    
+    @keyframes glow-pulse {
+        0%, 100% {
+            opacity: 0.6;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+    }
+    
+    /* Hiệu ứng ngôi sao */
+    .animated-stars {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        border-radius: inherit;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    .animated-stars::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(1px 1px at 30px 40px, white, transparent),
+            radial-gradient(1px 1px at 70px 90px, white, transparent),
+            radial-gradient(2px 2px at 140px 90px, white, transparent),
+            radial-gradient(1px 1px at 50px 150px, white, transparent),
+            radial-gradient(1px 1px at 90px 180px, white, transparent),
+            radial-gradient(2px 2px at 160px 40px, white, transparent),
+            radial-gradient(1px 1px at 200px 150px, white, transparent),
+            radial-gradient(1px 1px at 230px 100px, white, transparent);
+        animation: twinkle 7s ease-in-out infinite;
+        opacity: 0.7;
+    }
+    
+    @keyframes twinkle {
+        0%, 100% {
+            opacity: 0.7;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+    
+    /* Hiệu ứng glow */
+    .glow-effect {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9), transparent 60%);
+        opacity: 0;
+        z-index: 4;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        animation: glow-move 8s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glow-move {
+        0% {
+            opacity: 0.3;
+            background-position: 30% 30%;
+        }
+        50% {
+            opacity: 0.6;
+        }
+        100% {
+            opacity: 0.3;
+            background-position: 70% 70%;
+        }
+    }
+    
+    /* Hiệu ứng sóng */
+    .wave-container {
+        height: 80px;
+    }
+    
+    .waves {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin-bottom: -7px; /* Điều chỉnh kết nối với phần tiếp theo */
+    }
+    
+    .wave-parallax > use {
+        animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+    }
+    
+    .wave-parallax > use:nth-child(1) {
+        animation-delay: -2s;
+        animation-duration: 7s;
+    }
+    
+    .wave-parallax > use:nth-child(2) {
+        animation-delay: -3s;
+        animation-duration: 10s;
+    }
+    
+    .wave-parallax > use:nth-child(3) {
+        animation-delay: -4s;
+        animation-duration: 13s;
+    }
+    
+    .wave-parallax > use:nth-child(4) {
+        animation-delay: -5s;
+        animation-duration: 20s;
+    }
+    
+    @keyframes move-forever {
+        0% {
+            transform: translate3d(-90px, 0, 0);
+        }
+        100% {
+            transform: translate3d(85px, 0, 0);
+        }
+    }
+    
+    /* Team Section Ultra Enhanced Styles */
+    .team-section {
+        background-color: transparent;
+        height: 100%;
+        padding: 2.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 1rem 1rem 0;
+        background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.8), rgba(248, 245, 255, 0.8));
+        perspective: 1000px;
+    }
+    
+    .team-bg-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 30%, rgba(126, 87, 194, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(94, 53, 177, 0.1) 0%, transparent 40%);
+        animation: team-bg-shift 15s ease-in-out infinite alternate;
+        z-index: 1;
+    }
+    
+    @keyframes team-bg-shift {
+        0% {
+            opacity: 0.5;
+            background-position: 0% 0%;
+        }
+        100% {
+            opacity: 0.8;
+            background-position: 100% 100%;
+        }
+    }
+    
+    .team-glow-orbs {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(20px);
+        opacity: 0.3;
+        z-index: 0;
+    }
+    
+    .orb-1 {
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(126, 87, 194, 0.8), transparent 70%);
+        top: -40px;
+        right: 40px;
+        animation: orb-float 20s ease-in-out infinite;
+    }
+    
+    .orb-2 {
+        width: 80px;
+        height: 80px;
+        background: radial-gradient(circle, rgba(94, 53, 177, 0.7), transparent 70%);
+        bottom: 30px;
+        left: 20px;
+        animation: orb-float 15s ease-in-out 5s infinite;
+    }
+    
+    .orb-3 {
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(156, 127, 224, 0.6), transparent 70%);
+        top: 50%;
+        left: 50%;
+        animation: orb-float 18s ease-in-out 2s infinite;
+    }
+    
+    @keyframes orb-float {
+        0%, 100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.3;
+        }
+        25% {
+            transform: translate(20px, -15px) scale(1.1);
+            opacity: 0.5;
+        }
+        50% {
+            transform: translate(40px, 20px) scale(0.9);
+            opacity: 0.2;
+        }
+        75% {
+            transform: translate(-10px, 15px) scale(1.05);
+            opacity: 0.4;
+        }
+    }
+    
+    .team-title {
+        color: #7e57c2;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 2.5rem;
+        position: relative;
+        z-index: 5;
+        text-shadow: 0 0 15px rgba(126, 87, 194, 0.3);
+        animation: title-pulse 3s ease-in-out infinite alternate;
+        background: linear-gradient(45deg, #7e57c2, #5e35b1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        position: relative;
+    }
+    
+    @keyframes title-pulse {
+        0% {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)) brightness(1);
+            transform: scale(1);
+        }
+        100% {
+            filter: drop-shadow(0 4px 8px rgba(126, 87, 194, 0.4)) brightness(1.2);
+            transform: scale(1.05);
+        }
+    }
+    
+    .team-title::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.2);
+        filter: blur(8px);
+        border-radius: inherit;
+        z-index: -1;
+        opacity: 0.7;
+        animation: title-glow-pulse 3s ease-in-out infinite alternate;
+    }
+    
+    @keyframes title-glow-pulse {
+        0% {
+            opacity: 0.5;
+            transform: scale(1);
+        }
+        100% {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+    }
+    
+    .team-grid {
+        margin-top: 1.5rem;
+        row-gap: 2.5rem;
+        position: relative;
+        z-index: 4;
+    }
+    
+    .team-avatar-wrapper {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: 0 auto;
+        transition: all 0.5s ease;
+        z-index: 1;
+        perspective: 1200px;
+    }
+    
+    .team-avatar-3d-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 3;
+    }
+    
+    .team-avatar-circle {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 3px solid rgba(126, 87, 194, 0.5);
+        background-color: #f8f5ff;
+        object-fit: cover;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform: scale(1) translateZ(0);
+        filter: drop-shadow(0 10px 20px rgba(94, 53, 177, 0.3));
+        position: relative;
+        z-index: 4;
+        box-shadow: 
+            0 5px 15px rgba(94, 53, 177, 0.2),
+            0 0 0 5px rgba(255, 255, 255, 0.5),
+            0 0 0 8px rgba(126, 87, 194, 0.1);
+    }
+    
+    .team-member:hover .team-avatar-3d-container {
+        transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(5px);
+    }
+    
+    .team-member:hover .team-avatar-circle {
+        transform: scale(1.05) translateZ(15px);
+        border-color: rgba(126, 87, 194, 0.8);
+        box-shadow: 
+            0 15px 35px rgba(94, 53, 177, 0.3),
+            0 0 0 5px rgba(255, 255, 255, 0.8),
+            0 0 0 8px rgba(126, 87, 194, 0.3);
+    }
+    
+    .team-avatar-glow {
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(126, 87, 194, 0.7) 0%, transparent 70%);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: avatar-pulse 3s ease-in-out infinite;
+        z-index: 1;
+        filter: blur(8px);
+    }
+    
+    .team-member:hover .team-avatar-glow {
+        opacity: 0.7;
+        transform: scale(1.1) translateZ(-5px);
+    }
+    
+    .team-avatar-shine {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 48%,
+            rgba(255, 255, 255, 0.4) 52%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 3;
+        transform: translateZ(5px);
+    }
+    
+    .team-member:hover .team-avatar-shine {
+        opacity: 1;
+        animation: shine-sweep 2s ease-in-out infinite;
+    }
+    
+    @keyframes shine-sweep {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    
+    @keyframes avatar-pulse {
+        0%, 100% {
+            transform: scale(1) translateZ(-5px);
+            opacity: 0.3;
+        }
+        50% {
+            transform: scale(1.1) translateZ(-5px);
+            opacity: 0.6;
+        }
+    }
+    
+    .team-name {
+        color: #7e57c2;
+        font-size: 1rem;
+        margin-top: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: linear-gradient(45deg, #7e57c2, #5e35b1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .team-name::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -3px;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #7e57c2, transparent);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+    
+    .team-member:hover .team-name::after {
+        width: 80%;
+    }
+    
+    .team-member:hover .team-name {
+        transform: translateY(-2px);
+        text-shadow: 0 2px 5px rgba(126, 87, 194, 0.3);
+    }
+    
+    .team-role {
+        color: #666;
+        font-size: 0.8rem;
+        margin-top: 0.1rem;
+        font-weight: 400;
+        transition: all 0.3s ease;
+        opacity: 0.8;
+    }
+    
+    .team-member:hover .team-role {
+        color: #5e35b1;
+        opacity: 1;
+    }
+    
+    .team-member {
+        padding: 0.5rem;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 2;
+        cursor: pointer;
+        transform-style: preserve-3d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .team-member:hover {
+        transform: translateY(-5px);
+    }
+    
+    .team-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    .member-skill-tags {
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        margin-top: 5px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        flex-wrap: wrap;
+    }
+    
+    .team-member:hover .member-skill-tags {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .member-skill-tags span {
+        background: rgba(126, 87, 194, 0.1);
+        color: #7e57c2;
+        font-size: 0.65rem;
+        padding: 1px 6px;
+        border-radius: 10px;
+        border: 1px solid rgba(126, 87, 194, 0.2);
+        transition: all 0.3s ease;
+        margin-bottom: 2px;
+    }
+    
+    .member-skill-tags span:hover {
+        background: rgba(126, 87, 194, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    /* Update CTA panel to match team styling */
+    .cta-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 30%),
+            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+        animation: cta-bg-shift 15s ease-in-out infinite alternate;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    @keyframes cta-bg-shift {
+        0% {
+            opacity: 0.5;
+            background-position: 0% 0%;
+        }
+        100% {
+            opacity: 0.8;
+            background-position: 100% 100%;
+        }
+    }
+    
+    .cta-content > * {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Fancy Card Styles */
+    .fancy-card {
+        position: relative;
+        box-shadow: 0 10px 50px rgba(94, 53, 177, 0.3);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform: translateY(0);
+        background: #fff;
+        z-index: 1;
+        overflow: visible !important;
+        border-radius: 1rem !important;
+    }
+    
+    .fancy-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(94, 53, 177, 0.4);
+    }
+    
+    .fancy-card .row {
+        overflow: hidden;
+        border-radius: inherit;
+        margin: 0;
+    }
+    
+    .rounded-5 {
+        border-radius: 1rem !important;
+    }
+    
+    .rounded-start-5 {
+        border-top-left-radius: 1rem !important;
+        border-bottom-left-radius: 1rem !important;
+    }
+    
+    .rounded-end-5 {
+        border-top-right-radius: 1rem !important;
+        border-bottom-right-radius: 1rem !important;
+    }
+    
+    .card-glow-effect {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 0%, rgba(126, 87, 194, 0.4), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        animation: card-glow-breathe 4s ease-in-out infinite;
+    }
+    
+    @keyframes card-glow-breathe {
+        0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(1.05);
+        }
+    }
+    
+    .card-border-effect {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, 
+            rgba(126, 87, 194, 0.7), 
+            rgba(94, 53, 177, 0.3),
+            rgba(126, 87, 194, 0),
+            rgba(94, 53, 177, 0.5),
+            rgba(126, 87, 194, 0.7));
+        background-size: 300% 300%;
+        animation: border-color-move 8s linear infinite;
+        opacity: 0.7;
+        z-index: 0;
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
+    
+    @keyframes border-color-move {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    .card-shine-effect {
+        position: absolute;
+        top: -100%;
+        left: -100%;
+        right: 0;
+        bottom: 0;
+        width: 300%;
+        height: 300%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.1) 45%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0) 55%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(10deg) translate3d(-400px, 0px, 0px);
+        animation: card-shine 6s ease-in-out infinite;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    @keyframes card-shine {
+        0% {
+            transform: rotate(10deg) translate3d(-400px, 0px, 0px);
+        }
+        30%, 100% {
+            transform: rotate(10deg) translate3d(600px, 0px, 0px);
+        }
+    }
+    
+    .card-animated-bg {
+        position: absolute;
+        inset: 0;
+        background: 
+            radial-gradient(circle at 70% 80%, rgba(126, 87, 194, 0.03) 0%, transparent 30%),
+            radial-gradient(circle at 20% 40%, rgba(94, 53, 177, 0.03) 0%, transparent 30%);
+        background-size: 150% 150%, 200% 200%;
+        animation: bg-move 15s ease infinite alternate;
+        opacity: 1;
+        z-index: 0;
+    }
+    
+    @keyframes bg-move {
+        0% {
+            background-position: 0% 0%, 0% 0%;
+        }
+        100% {
+            background-position: 100% 100%, 50% 50%;
+        }
+    }
+    
+    .z-index-1 {
+        z-index: 1;
+        position: relative;
+    }
+    
+    .btn-glow {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-glow:after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.1) 45%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.1) 55%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(30deg) translate3d(-300px, 0px, 0px);
+        transition: all 0.6s ease;
+        animation: btn-shine 3s ease-in-out infinite;
+    }
+    
+    @keyframes btn-shine {
+        0% {
+            transform: rotate(30deg) translate3d(-300px, 0px, 0px);
+        }
+        30%, 100% {
+            transform: rotate(30deg) translate3d(300px, 0px, 0px);
+        }
+    }
+    
+    .btn-glow:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(94, 53, 177, 0.3);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('.floating-3d-container');
+        if (container) {
+            // Thêm các hạt ngẫu nhiên
+            createStars(container);
+        }
+        
+        // Thêm hạt nổi cho phần team
+        const teamSection = document.querySelector('.team-section');
+        if (teamSection) {
+            createTeamParticles();
+            
+            // Thêm hạt theo con trỏ chuột
+            teamSection.addEventListener('mousemove', createMouseParticle);
+            
+            // Hiệu ứng 3D theo con trỏ chuột
+            teamSection.addEventListener('mousemove', handleTeamMouseMove);
+        }
+        
+        // Thêm hiệu ứng hover cho avatars
+        initTeamAvatars();
+    });
+    
+    function initTeamAvatars() {
+        const teamMembers = document.querySelectorAll('.team-member');
+        
+        teamMembers.forEach((member, index) => {
+            // Hiệu ứng hover cơ bản
+            member.addEventListener('mouseenter', function() {
+                const avatar = this.querySelector('.team-avatar-circle');
+                if (avatar) {
+                    avatar.style.transform = 'scale(1.1) rotate(5deg) translateZ(30px)';
+                    avatar.style.boxShadow = '0 0 25px rgba(126, 87, 194, 0.6)';
+                }
+                
+                // Hiệu ứng pulse khi hover
+                animatePulse(this);
+            });
+            
+            member.addEventListener('mouseleave', function() {
+                const avatar = this.querySelector('.team-avatar-circle');
+                if (avatar) {
+                    avatar.style.transform = 'scale(1) rotate(0deg) translateZ(0)';
+                    avatar.style.boxShadow = 'none';
+                }
+                
+                // Dừng hiệu ứng pulse
+                stopPulse(this);
+            });
+            
+            // Thêm hiệu ứng xuất hiện với delay
+            member.style.opacity = '0';
+            member.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                member.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                member.style.opacity = '1';
+                member.style.transform = 'translateY(0)';
+            }, 300 + (index * 150));
+        });
+    }
+    
+    // Tạo hiệu ứng pulse động khi hover
+    function animatePulse(element) {
+        let pulseElement = document.createElement('div');
+        pulseElement.className = 'member-pulse-effect';
+        pulseElement.style.position = 'absolute';
+        pulseElement.style.top = '50%';
+        pulseElement.style.left = '50%';
+        pulseElement.style.transform = 'translate(-50%, -50%)';
+        pulseElement.style.width = '100%';
+        pulseElement.style.height = '100%';
+        pulseElement.style.borderRadius = '8px';
+        pulseElement.style.background = 'radial-gradient(circle, rgba(126, 87, 194, 0.1) 0%, transparent 70%)';
+        pulseElement.style.pointerEvents = 'none';
+        pulseElement.style.zIndex = '0';
+        
+        element.appendChild(pulseElement);
+        
+        let size = 100;
+        let opacity = 0.1;
+        let growing = true;
+        
+        element.pulseInterval = setInterval(() => {
+            if (growing) {
+                size += 2;
+                opacity += 0.01;
+                if (size >= 120) {
+                    growing = false;
+                }
+            } else {
+                size -= 2;
+                opacity -= 0.01;
+                if (size <= 100) {
+                    growing = true;
+                }
+            }
+            
+            pulseElement.style.width = size + '%';
+            pulseElement.style.height = size + '%';
+            pulseElement.style.opacity = Math.min(0.2, opacity);
+        }, 50);
+    }
+    
+    function stopPulse(element) {
+        if (element.pulseInterval) {
+            clearInterval(element.pulseInterval);
+            element.pulseInterval = null;
+        }
+        
+        const pulseElement = element.querySelector('.member-pulse-effect');
+        if (pulseElement) {
+            element.removeChild(pulseElement);
+        }
+    }
+    
+    function handleTeamMouseMove(e) {
+        const section = e.currentTarget;
+        const sectionRect = section.getBoundingClientRect();
+        
+        // Tính toán vị trí tương đối của chuột trong section (0-1)
+        const relativeX = (e.clientX - sectionRect.left) / sectionRect.width;
+        const relativeY = (e.clientY - sectionRect.top) / sectionRect.height;
+        
+        // Chuyển đổi vị trí tương đối thành góc xoay (khoảng -5 đến 5 độ)
+        const rotateY = (relativeX - 0.5) * 5;
+        const rotateX = (0.5 - relativeY) * 5;
+        
+        // Áp dụng hiệu ứng 3D vào các thành viên đội
+        const members = section.querySelectorAll('.team-member');
+        members.forEach(member => {
+            const container = member.querySelector('.team-avatar-3d-container');
+            if (container) {
+                container.style.transform = `perspective(1000px) rotateY(${rotateY}deg) rotateX(${rotateX}deg) translateZ(5px)`;
+            }
+        });
+        
+        // Hiệu ứng chuyển động cho orbs theo chuột
+        const orbs = section.querySelectorAll('.orb');
+        orbs.forEach((orb, index) => {
+            const factor = (index + 1) * 0.07;
+            const moveX = (relativeX - 0.5) * 20 * factor;
+            const moveY = (relativeY - 0.5) * 20 * factor;
+            orb.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        });
+    }
+    
+    function createMouseParticle(e) {
+        // Chỉ tạo hạt ngẫu nhiên (1/5 cơ hội)
+        if (Math.random() > 0.2) return;
+        
+        const section = e.currentTarget;
+        const sectionRect = section.getBoundingClientRect();
+        
+        // Vị trí chuột tương đối với section
+        const x = e.clientX - sectionRect.left;
+        const y = e.clientY - sectionRect.top;
+        
+        // Tạo particle
+        const particle = document.createElement('div');
+        particle.className = 'mouse-particle';
+        particle.style.position = 'absolute';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.width = `${Math.random() * 6 + 2}px`;
+        particle.style.height = particle.style.width;
+        particle.style.borderRadius = '50%';
+        particle.style.backgroundColor = `rgba(126, 87, 194, ${Math.random() * 0.3 + 0.2})`;
+        particle.style.boxShadow = '0 0 5px rgba(126, 87, 194, 0.3)';
+        particle.style.zIndex = '1';
+        particle.style.pointerEvents = 'none';
+        section.querySelector('.team-particles').appendChild(particle);
+        
+        // Animation với GSAP-like
+        let opacity = Math.random() * 0.3 + 0.2;
+        let scale = 1;
+        let posX = 0;
+        let posY = 0;
+        const duration = Math.random() * 1000 + 1000;
+        const startTime = Date.now();
+        
+        const randomX = (Math.random() - 0.5) * 60;
+        const randomY = (Math.random() - 0.5) * 60;
+        
+        function animateParticle() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function (cubic-bezier like)
+            const ease = progress < 0.5 ? 4 * progress ** 3 : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+            // Update properties
+            opacity = Math.max(0, opacity - (progress * 0.4));
+            scale = Math.max(0.1, scale - (progress * 0.9));
+            posX += randomX * 0.02;
+            posY += randomY * 0.02 - 0.5; // Slight upward drift
+            
+            // Apply updates
+            particle.style.opacity = opacity;
+            particle.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+            
+            // Continue animation or remove
+            if (progress < 1) {
+                requestAnimationFrame(animateParticle);
+            } else {
+                particle.remove();
+            }
+        }
+        
+        // Start animation
+        requestAnimationFrame(animateParticle);
+    }
+    
+    function createStars(container) {
+        // Thêm các hạt nổi động vào container
+        const particles = document.createElement('div');
+        particles.className = 'dynamic-particles';
+        container.appendChild(particles);
+        
+        // Tạo các hạt ngẫu nhiên
+        for (let i = 0; i < 10; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.position = 'absolute';
+            particle.style.width = (Math.random() * 4 + 2) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+            particle.style.borderRadius = '50%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.boxShadow = '0 0 10px rgba(126, 87, 194, 0.7)';
+            particle.style.animation = `particle-anim ${Math.random() * 10 + 5}s linear infinite`;
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particles.appendChild(particle);
+        }
+        
+        // Thêm style cho animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particle-anim {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    function createTeamParticles() {
+        const teamParticles = document.querySelector('.team-particles');
+        if (!teamParticles) return;
+        
+        // Tạo các hạt nổi cho phần team
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'team-particle';
+            particle.style.position = 'absolute';
+            
+            // Kích thước ngẫu nhiên với phân phối Gaussian
+            const size = Math.abs((Math.random() + Math.random() + Math.random()) / 3 * 4 + 1);
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Màu ngẫu nhiên trong tông tím
+            const hue = Math.floor(Math.random() * 30) + 260; // 260-290 (tím)
+            const saturation = Math.floor(Math.random() * 30) + 60; // 60-90%
+            const lightness = Math.floor(Math.random() * 20) + 70; // 70-90%
+            const alpha = Math.random() * 0.3 + 0.1;
+            
+            particle.style.backgroundColor = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+            particle.style.borderRadius = '50%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.boxShadow = `0 0 ${size * 2}px hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.5})`;
+            particle.style.zIndex = '1';
+            
+            // Độ sâu ngẫu nhiên (giả lập 3D)
+            const depth = Math.random();
+            particle.style.filter = `blur(${(1 - depth) * 2}px)`;
+            particle.style.opacity = depth * 0.7 + 0.3;
+            
+            // Tạo animation ngẫu nhiên cho mỗi hạt với đường di chuyển phức tạp hơn
+            const duration = Math.random() * 20 + 20; // 20-40s
+            const delay = Math.random() * 10;
+            
+            // Animation phức tạp hơn với cubic-bezier
+            const easing = `cubic-bezier(${Math.random()}, ${Math.random()}, ${Math.random()}, ${Math.random()})`;
+            
+            // Random keyframe animation
+            const keyframeId = `float-particle-${i}`;
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes ${keyframeId} {
+                    0% {
+                        transform: translate(0, 0) scale(1);
+                        opacity: ${depth * 0.5 + 0.2};
+                    }
+                    25% {
+                        transform: translate(${Math.random() * 50 - 25}px, ${Math.random() * 50 - 25}px) scale(${Math.random() * 0.4 + 0.8});
+                        opacity: ${depth * 0.7 + 0.3};
+                    }
+                    50% {
+                        transform: translate(${Math.random() * 70 - 35}px, ${Math.random() * 70 - 35}px) scale(${Math.random() * 0.4 + 0.8});
+                        opacity: ${depth * 0.6 + 0.2};
+                    }
+                    75% {
+                        transform: translate(${Math.random() * 50 - 25}px, ${Math.random() * 50 - 25}px) scale(${Math.random() * 0.4 + 0.8});
+                        opacity: ${depth * 0.7 + 0.3};
+                    }
+                    100% {
+                        transform: translate(0, 0) scale(1);
+                        opacity: ${depth * 0.5 + 0.2};
+                    }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+            
+            particle.style.animation = `${keyframeId} ${duration}s ${easing} ${delay}s infinite`;
+            teamParticles.appendChild(particle);
+        }
+    }
+</script>
+{% endblock %}
