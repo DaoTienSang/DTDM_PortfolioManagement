@@ -333,3 +333,185 @@ def fetch_stock_prices_snapshot(output_file=None):
     except Exception as e:
         print(f"Error in fetch_stock_prices_snapshot: {str(e)}")
         return None
+
+def get_technical_indicators(symbol):
+    """
+    Lấy dữ liệu các chỉ báo kỹ thuật (MA, MACD, RSI) từ PostgreSQL
+    
+    Args:
+        symbol (str): Mã cổ phiếu cần lấy chỉ báo
+        
+    Returns:
+        dict: Dữ liệu các chỉ báo kỹ thuật và dữ liệu lịch sử để vẽ biểu đồ
+    """
+    import psycopg2
+    import json
+    from datetime import datetime
+    import pandas as pd
+    
+    try:
+        # Thông tin kết nối PostgreSQL - lấy từ biến môi trường hoặc dùng giá trị mặc định
+        PG_HOST = 'db'  # tên service trong docker-compose
+        PG_PORT = '5432'
+        PG_DB = 'db_for_pm'
+        PG_USER = 'airflow'
+        PG_PASSWORD = 'admin123'
+        
+        print(f"Connecting to PostgreSQL to get technical indicators for {symbol}...")
+        
+        # Kết nối đến PostgreSQL
+        conn = psycopg2.connect(
+            host=PG_HOST,
+            port=PG_PORT,
+            dbname=PG_DB,
+            user=PG_USER,
+            password=PG_PASSWORD
+        )
+        
+        # Tạo cursor
+        cur = conn.cursor()
+        
+        # Truy vấn dữ liệu từ bảng stock_processed_data
+        query = """
+        SELECT json_data
+        FROM public.stock_processed_data
+        WHERE symbol = %s
+        """
+        cur.execute(query, (symbol,))
+        
+        # Lấy kết quả
+        result = cur.fetchone()
+        
+        # Đóng kết nối
+        cur.close()
+        conn.close()
+        
+        if not result:
+            print(f"Không tìm thấy dữ liệu cho mã {symbol}")
+            return None
+        
+        # Lấy dữ liệu JSON
+        json_data = result[0]
+        
+        # Chuyển đổi JSONB thành dict nếu cần
+        if not isinstance(json_data, dict):
+            json_data = json.loads(json_data)
+        
+        print(f"Retrieved JSON data for {symbol}, keys: {list(json_data.keys())}")
+        
+        # Lấy dữ liệu lịch sử đã được xử lý
+        historical_processed = json_data.get('historical_processed', [])
+        
+        if not historical_processed:
+            print(f"Không có dữ liệu lịch sử đã xử lý cho mã {symbol}")
+            return None
+        
+        print(f"Found {len(historical_processed)} historical data points for {symbol}")
+        
+        # Kiểm tra cấu trúc dữ liệu của mục đầu tiên để debug
+        if historical_processed:
+            first_item = historical_processed[0]
+            print(f"First data point keys: {list(first_item.keys())}")
+            print(f"MA5: {first_item.get('ma5')}, MA20: {first_item.get('ma20')}, RSI: {first_item.get('rsi')}")
+        
+        # Chuyển đổi dữ liệu thành định dạng phù hợp để vẽ biểu đồ
+        candles_data = []  # Dữ liệu nến
+        ma5_data = []      # Đường MA5
+        ma20_data = []     # Đường MA20
+        rsi_data = []      # Đường RSI
+        macd_line = []     # Đường MACD
+        macd_signal = []   # Đường tín hiệu MACD
+        macd_histogram = [] # Histogram MACD
+        
+        for item in historical_processed:
+            time_str = item.get('time')
+            
+            # Chuyển đổi định dạng thời gian nếu cần
+            if isinstance(time_str, str):
+                time_format = time_str
+            else:
+                time_format = datetime.fromtimestamp(time_str).strftime('%Y-%m-%d') if isinstance(time_str, (int, float)) else None
+            
+            if not time_format:
+                continue
+                
+            # Dữ liệu nến
+            candle = {
+                'time': time_format,
+                'open': float(item.get('open', 0)),
+                'high': float(item.get('high', 0)),
+                'low': float(item.get('low', 0)),
+                'close': float(item.get('close', 0)),
+                'volume': float(item.get('volume', 0))
+            }
+            candles_data.append(candle)
+            
+            # Dữ liệu MA5
+            if 'ma5' in item and item['ma5'] is not None:
+                ma5_data.append({
+                    'time': time_format,
+                    'value': float(item['ma5'])
+                })
+            
+            # Dữ liệu MA20
+            if 'ma20' in item and item['ma20'] is not None:
+                ma20_data.append({
+                    'time': time_format,
+                    'value': float(item['ma20'])
+                })
+            
+            # Dữ liệu RSI
+            if 'rsi' in item and item['rsi'] is not None:
+                rsi_data.append({
+                    'time': time_format,
+                    'value': float(item['rsi'])
+                })
+            
+            # Dữ liệu MACD
+            if 'macd_line' in item and item['macd_line'] is not None:
+                macd_line.append({
+                    'time': time_format,
+                    'value': float(item['macd_line'])
+                })
+                
+            if 'macd_signal' in item and item['macd_signal'] is not None:
+                macd_signal.append({
+                    'time': time_format,
+                    'value': float(item['macd_signal'])
+                })
+                
+            if 'macd_histogram' in item and item['macd_histogram'] is not None:
+                macd_histogram.append({
+                    'time': time_format,
+                    'value': float(item['macd_histogram'])
+                })
+        
+        # Log ra các counts
+        print(f"Processed data for {symbol}:")
+        print(f"  - Candles: {len(candles_data)}")
+        print(f"  - MA5: {len(ma5_data)}")
+        print(f"  - MA20: {len(ma20_data)}")
+        print(f"  - RSI: {len(rsi_data)}")
+        print(f"  - MACD Line: {len(macd_line)}")
+        print(f"  - MACD Signal: {len(macd_signal)}")
+        print(f"  - MACD Histogram: {len(macd_histogram)}")
+        
+        # Trả về tất cả dữ liệu
+        return {
+            'success': True,
+            'symbol': symbol,
+            'candles': candles_data,
+            'ma5': ma5_data,
+            'ma20': ma20_data,
+            'rsi': rsi_data,
+            'macd_line': macd_line,
+            'macd_signal': macd_signal,
+            'macd_histogram': macd_histogram
+        }
+        
+    except Exception as e:
+        print(f"Lỗi khi lấy dữ liệu chỉ báo kỹ thuật cho mã {symbol}: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e)
+        }

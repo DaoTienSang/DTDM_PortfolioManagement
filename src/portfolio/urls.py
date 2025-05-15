@@ -36,6 +36,7 @@ urlpatterns = [
     # Trang thị trường và API Kafka
     path('market/', views.market, name='market'),
     path('api/historical-data/<str:symbol>/', views.get_stock_historical_data, name='get_stock_historical_data'),
+    path('api/technical-indicators/<str:symbol>/', views.get_technical_indicators_api, name='get_technical_indicators_api'),
     
     # Kafka API endpoints
     path('api/kafka/stock-data/<str:symbol>/', views.get_kafka_stock_data, name='get_kafka_stock_data'),

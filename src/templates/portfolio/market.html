@@ -496,7 +496,39 @@
         <div class="chart-modal-content">
             <span class="close-modal">&times;</span>
             <h2 id="chartTitle">Biểu đồ giá cổ phiếu <span id="stockSymbol"></span></h2>
+            
+            <!-- Thêm điều khiển hiển thị chỉ báo kỹ thuật -->
+            <div class="mb-3 d-flex flex-wrap gap-3 indicator-controls">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showMA5" checked>
+                    <label class="form-check-label" for="showMA5">MA5 <span class="badge bg-primary">Đường xanh</span></label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showMA20" checked>
+                    <label class="form-check-label" for="showMA20">MA20 <span class="badge bg-warning">Đường cam</span></label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showRSI">
+                    <label class="form-check-label" for="showRSI">RSI <span class="badge bg-secondary">Panel riêng</span></label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showMACD">
+                    <label class="form-check-label" for="showMACD">MACD <span class="badge bg-secondary">Panel riêng</span></label>
+                </div>
+            </div>
+            
             <div id="chart-container" class="chart-container"></div>
+            <!-- Container riêng cho RSI và MACD -->
+            <div id="rsi-container" class="chart-container mt-3" style="height: 150px; display: none;">
+                <div class="alert alert-info py-1 mb-1">
+                    <small><strong>RSI Panel</strong> - Bật từ toggle switch bên trên</small>
+                </div>
+            </div>
+            <div id="macd-container" class="chart-container mt-3" style="height: 150px; display: none;">
+                <div class="alert alert-info py-1 mb-1">
+                    <small><strong>MACD Panel</strong> - Bật từ toggle switch bên trên</small>
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -742,180 +774,26 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Received data count:', data.length);
-                    console.log('Sample data:', data.slice(0, 2));
+                    console.log('Received data:', data);
                     
-                    if (Array.isArray(data) && data.length > 0) {
-                        // Xóa màn hình loading trước khi hiển thị biểu đồ
-                        const chartContainer = document.getElementById('chart-container');
-                        chartContainer.innerHTML = '';
-                        
-                        // Tạo lại biểu đồ với kích thước đúng
-                        chart = LightweightCharts.createChart(chartContainer, {
-                            width: chartContainer.clientWidth,
-                            height: 450,
-                            layout: { 
-                                backgroundColor: '#ffffff',
-                                textColor: '#333',
-                                fontSize: 12,
-                                fontFamily: 'Arial, sans-serif',
-                            },
-                            grid: {
-                                vertLines: { color: '#f0f0f0' },
-                                horzLines: { color: '#f0f0f0' }
-                            },
-                            timeScale: {
-                                timeVisible: true,
-                                secondsVisible: false,
-                                borderColor: '#D6DCDE',
-                            },
-                            rightPriceScale: {
-                                borderColor: '#D6DCDE',
-                            },
-                            crosshair: {
-                                mode: LightweightCharts.CrosshairMode.Normal,
-                                vertLine: {
-                                    color: 'rgba(70, 130, 180, 0.5)',
-                                    width: 1,
-                                    style: 1,
-                                    labelBackgroundColor: '#1a73e8',
-                                },
-                                horzLine: {
-                                    color: 'rgba(70, 130, 180, 0.5)',
-                                    width: 1,
-                                    style: 1,
-                                    labelBackgroundColor: '#1a73e8',
-                                },
-                            },
-                            localization: {
-                                dateFormat: 'dd/MM/yyyy',
-                            },
-                        });
-                        
-                        candleSeries = chart.addCandlestickSeries({
-                            upColor: '#26a69a',
-                            downColor: '#ef5350',
-                            borderVisible: false,
-                            wickUpColor: '#26a69a',
-                            wickDownColor: '#ef5350'
-                        });
-                        
-                        // Xử lý dữ liệu thời gian
-                        const formattedData = data.map(item => {
-                            // Kiểm tra định dạng thời gian
-                            let timeStr = item.time;
-                            
-                            // Nếu đã là string và có định dạng YYYY-MM-DD thì giữ nguyên
-                            if (typeof timeStr === 'string' && timeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                return item;
-                            }
-                            
-                            // Nếu là Date object hoặc timestamp, chuyển thành YYYY-MM-DD
-                            try {
-                                const date = new Date(timeStr);
-                                if (!isNaN(date.getTime())) {
-                                    const formattedTime = date.toISOString().split('T')[0];
-                                    return {
-                                        ...item,
-                                        time: formattedTime
-                                    };
-                                }
-                            } catch (e) {
-                                console.error('Error parsing date:', timeStr, e);
-                            }
-                            
-                            // Nếu không thể chuyển đổi, giữ nguyên
-                            return item;
-                        });
-                        
-                        console.log('Formatted data sample:', formattedData.slice(0, 2));
-                        
-                        // Thử set dữ liệu
-                        try {
-                            candleSeries.setData(formattedData);
-                            // Đảm bảo hiển thị đủ toàn bộ biểu đồ
-                            chart.timeScale().fitContent();
-                            console.log('Chart data set successfully');
-                        } catch (err) {
-                            console.error('Error setting chart data:', err);
-                            // Thử xử lý lại với định dạng khác nếu cần
-                            try {
-                                // Nếu thất bại, thử chuyển đổi sang cấu trúc đơn giản hơn
-                                const simplifiedData = formattedData.map(item => ({
-                                    time: item.time,
-                                    open: Number(item.open),
-                                    high: Number(item.high),
-                                    low: Number(item.low),
-                                    close: Number(item.close),
-                                    volume: item.volume ? Number(item.volume) : undefined
-                                }));
-                                console.log('Simplified data sample:', simplifiedData.slice(0, 2));
-                                candleSeries.setData(simplifiedData);
-                                chart.timeScale().fitContent();
-                                console.log('Chart data set with simplified format');
-                            } catch (finalErr) {
-                                console.error('Final error setting chart data:', finalErr);
-                                throw finalErr;
-                            }
-                        }
-                        
-                        // Add volume series nếu có dữ liệu khối lượng
-                        if (data[0].volume) {
-                            try {
-                                const volumeSeries = chart.addHistogramSeries({
-                                    color: '#26a69a80',
-                                    priceFormat: {
-                                        type: 'volume',
-                                    },
-                                    priceScaleId: '',
-                                    scaleMargins: {
-                                        top: 0.8,
-                                        bottom: 0,
-                                    },
-                                });
-                                
-                                const volumeData = formattedData.map(item => ({
-                                    time: item.time,
-                                    value: Number(item.volume),
-                                    color: item.close >= item.open ? '#26a69a80' : '#ef535080'
-                                }));
-                                
-                                volumeSeries.setData(volumeData);
-                                console.log('Volume data set successfully');
-                            } catch (e) {
-                                console.error('Error setting volume data:', e);
-                            }
-                        }
-                        
-                        // Thêm chi tiết ngày gần nhất
-                        try {
-                            const lastDataPoint = formattedData[formattedData.length - 1];
-                            const lastTimeParts = lastDataPoint.time.split('-');
-                            const dateStr = lastTimeParts.length === 3 ? 
-                                `${lastTimeParts[2]}/${lastTimeParts[1]}/${lastTimeParts[0]}` : 
-                                'Dữ liệu mới nhất';
-                            
-                            // Thêm thông tin tóm tắt giao dịch gần nhất
-                            const lastPriceInfo = document.createElement('div');
-                            lastPriceInfo.className = 'last-price-info';
-                            lastPriceInfo.innerHTML = `
-                                <div class="price-date-info">
-                                    <div class="price-date">${dateStr}</div>
-                                    <div class="price-summary">
-                                        <div class="price-item">Mở: <span class="price-value">${Number(lastDataPoint.open).toLocaleString('vi-VN')}</span></div>
-                                        <div class="price-item">Cao: <span class="price-value">${Number(lastDataPoint.high).toLocaleString('vi-VN')}</span></div>
-                                        <div class="price-item">Thấp: <span class="price-value">${Number(lastDataPoint.low).toLocaleString('vi-VN')}</span></div>
-                                        <div class="price-item">Đóng: <span class="price-value">${Number(lastDataPoint.close).toLocaleString('vi-VN')}</span></div>
-                                        ${lastDataPoint.volume ? `<div class="price-item">KL: <span class="price-value">${Number(lastDataPoint.volume).toLocaleString('vi-VN')}</span></div>` : ''}
-                                    </div>
-                                </div>
-                            `;
-                            chartContainer.appendChild(lastPriceInfo);
-                            console.log('Last price info added');
-                        } catch (e) {
-                            console.error('Error adding last price info:', e);
-                        }
-                    } else {
+                    // Xóa màn hình loading trước khi hiển thị biểu đồ
+                    const chartContainer = document.getElementById('chart-container');
+                    const rsiContainer = document.getElementById('rsi-container');
+                    const macdContainer = document.getElementById('macd-container');
+                    chartContainer.innerHTML = '';
+                    rsiContainer.innerHTML = '';
+                    macdContainer.innerHTML = '';
+                    
+                    // Kiểm tra cấu trúc dữ liệu mới với các chỉ báo riêng biệt
+                    if (data.candles && Array.isArray(data.candles)) {
+                        renderChartWithIndicators(data);
+                    } 
+                    // Xử lý cấu trúc dữ liệu cũ (chỉ có mảng nến)
+                    else if (Array.isArray(data)) {
+                        // Dữ liệu có cấu trúc cũ, chỉ có mảng nến
+                        renderLegacyChart(data);
+                    } 
+                    else {
                         throw new Error('Invalid data format or empty data');
                     }
                 })
@@ -929,6 +807,591 @@
                         </div>
                     `;
                 });
+        }
+        
+        // Hàm mới để vẽ biểu đồ với các chỉ báo kỹ thuật đầy đủ
+        function renderChartWithIndicators(data) {
+            try {
+                // Dữ liệu nến
+                const candles = data.candles || [];
+                
+                // Dữ liệu các chỉ báo
+                const ma5Data = data.ma5 || [];
+                const ma20Data = data.ma20 || [];
+                const rsiData = data.rsi || [];
+                const macdLineData = data.macd_line || [];
+                const macdSignalData = data.macd_signal || [];
+                const macdHistogramData = data.macd_histogram || [];
+                
+                console.log(`Loaded data: ${candles.length} candles, MA5: ${ma5Data.length}, MA20: ${ma20Data.length}, RSI: ${rsiData.length}`);
+                
+                // Tạo biểu đồ chính
+                const chartContainer = document.getElementById('chart-container');
+                chart = LightweightCharts.createChart(chartContainer, {
+                    width: chartContainer.clientWidth,
+                    height: 450,
+                    layout: { 
+                        backgroundColor: '#ffffff',
+                        textColor: '#333',
+                        fontSize: 12,
+                        fontFamily: 'Arial, sans-serif',
+                    },
+                    grid: {
+                        vertLines: { color: '#f0f0f0' },
+                        horzLines: { color: '#f0f0f0' }
+                    },
+                    timeScale: {
+                        timeVisible: true,
+                        secondsVisible: false,
+                        borderColor: '#D6DCDE',
+                    },
+                    rightPriceScale: {
+                        borderColor: '#D6DCDE',
+                    },
+                    crosshair: {
+                        mode: LightweightCharts.CrosshairMode.Normal,
+                        vertLine: {
+                            color: 'rgba(70, 130, 180, 0.5)',
+                            width: 1,
+                            style: 1,
+                            labelBackgroundColor: '#1a73e8',
+                        },
+                        horzLine: {
+                            color: 'rgba(70, 130, 180, 0.5)',
+                            width: 1,
+                            style: 1,
+                            labelBackgroundColor: '#1a73e8',
+                        },
+                    },
+                    localization: {
+                        dateFormat: 'dd/MM/yyyy',
+                    },
+                });
+                
+                // Thêm series nến
+                candleSeries = chart.addCandlestickSeries({
+                    upColor: '#26a69a',
+                    downColor: '#ef5350',
+                    borderVisible: false,
+                    wickUpColor: '#26a69a',
+                    wickDownColor: '#ef5350'
+                });
+                
+                // Set dữ liệu nến
+                candleSeries.setData(candles);
+                
+                // Thêm đường MA5 nếu có dữ liệu
+                if (ma5Data.length > 0) {
+                    const ma5Series = chart.addLineSeries({
+                        color: '#2196F3',
+                        lineWidth: 3,
+                        title: 'MA5',
+                        priceLineVisible: false,
+                        visible: true,
+                        lastValueVisible: true,
+                    });
+                    ma5Series.setData(ma5Data);
+                    console.log(`Added MA5 series with ${ma5Data.length} points`);
+                    
+                    // Lưu series để có thể ẩn/hiện sau này
+                    window.ma5Series = ma5Series;
+                } else {
+                    console.warn('No MA5 data available');
+                }
+                
+                // Thêm đường MA20 nếu có dữ liệu
+                if (ma20Data.length > 0) {
+                    const ma20Series = chart.addLineSeries({
+                        color: '#FF9800',
+                        lineWidth: 3,
+                        title: 'MA20',
+                        priceLineVisible: false,
+                        visible: true,
+                        lastValueVisible: true,
+                    });
+                    ma20Series.setData(ma20Data);
+                    console.log(`Added MA20 series with ${ma20Data.length} points`);
+                    
+                    // Lưu series để có thể ẩn/hiện sau này
+                    window.ma20Series = ma20Series;
+                } else {
+                    console.warn('No MA20 data available');
+                }
+                
+                // Nếu có dữ liệu khối lượng, thêm histogram khối lượng
+                if (candles.length > 0 && candles[0].volume) {
+                    try {
+                        const volumeSeries = chart.addHistogramSeries({
+                            color: '#26a69a80',
+                            priceFormat: {
+                                type: 'volume',
+                            },
+                            priceScaleId: '',
+                            scaleMargins: {
+                                top: 0.8,
+                                bottom: 0,
+                            },
+                        });
+                        
+                        const volumeData = candles.map(item => ({
+                            time: item.time,
+                            value: item.volume,
+                            color: item.close >= item.open ? '#26a69a80' : '#ef535080'
+                        }));
+                        
+                        volumeSeries.setData(volumeData);
+                    } catch (e) {
+                        console.error('Error setting volume data:', e);
+                    }
+                }
+                
+                // Thêm biểu đồ RSI nếu có dữ liệu
+                if (rsiData.length > 0) {
+                    const rsiContainer = document.getElementById('rsi-container');
+                    const rsiChart = LightweightCharts.createChart(rsiContainer, {
+                        width: rsiContainer.clientWidth,
+                        height: 150,
+                        layout: { 
+                            backgroundColor: '#ffffff',
+                            textColor: '#333',
+                            fontSize: 12,
+                            fontFamily: 'Arial, sans-serif',
+                        },
+                        grid: {
+                            vertLines: { color: '#f0f0f0' },
+                            horzLines: { color: '#f0f0f0' }
+                        },
+                        timeScale: {
+                            timeVisible: true,
+                            secondsVisible: false,
+                            borderColor: '#D6DCDE',
+                        },
+                        rightPriceScale: {
+                            borderColor: '#D6DCDE',
+                        },
+                        crosshair: {
+                            mode: LightweightCharts.CrosshairMode.Normal,
+                        },
+                    });
+                    
+                    // Tạo RSI series
+                    const rsiSeries = rsiChart.addLineSeries({
+                        color: '#9C27B0',
+                        lineWidth: 2,
+                        title: 'RSI',
+                        priceLineVisible: false,
+                    });
+                    
+                    // Thêm đường tham chiếu ở mức 30 và 70
+                    const rsiOverSold = rsiChart.addLineSeries({
+                        color: '#FF5252',
+                        lineWidth: 1,
+                        lineStyle: 2, // nét đứt
+                        priceLineVisible: false,
+                    });
+                    
+                    const rsiOverBought = rsiChart.addLineSeries({
+                        color: '#FF5252',
+                        lineWidth: 1,
+                        lineStyle: 2, // nét đứt
+                        priceLineVisible: false,
+                    });
+                    
+                    // Set dữ liệu mức tham chiếu
+                    const firstTime = rsiData[0].time;
+                    const lastTime = rsiData[rsiData.length - 1].time;
+                    
+                    rsiOverSold.setData([
+                        { time: firstTime, value: 30 },
+                        { time: lastTime, value: 30 }
+                    ]);
+                    
+                    rsiOverBought.setData([
+                        { time: firstTime, value: 70 },
+                        { time: lastTime, value: 70 }
+                    ]);
+                    
+                    // Set dữ liệu RSI
+                    rsiSeries.setData(rsiData);
+                    
+                    // Lưu chart để có thể ẩn/hiện sau này
+                    window.rsiChart = rsiChart;
+                    
+                    // Đồng bộ time scale giữa các biểu đồ
+                    chart.timeScale().subscribeVisibleTimeRangeChange(timeRange => {
+                        rsiChart.timeScale().setVisibleRange(timeRange);
+                    });
+                    
+                    rsiChart.timeScale().subscribeVisibleTimeRangeChange(timeRange => {
+                        chart.timeScale().setVisibleRange(timeRange);
+                    });
+                }
+                
+                // Thêm biểu đồ MACD nếu có dữ liệu
+                if (macdLineData.length > 0 && macdSignalData.length > 0) {
+                    const macdContainer = document.getElementById('macd-container');
+                    const macdChart = LightweightCharts.createChart(macdContainer, {
+                        width: macdContainer.clientWidth,
+                        height: 150,
+                        layout: { 
+                            backgroundColor: '#ffffff',
+                            textColor: '#333',
+                            fontSize: 12,
+                            fontFamily: 'Arial, sans-serif',
+                        },
+                        grid: {
+                            vertLines: { color: '#f0f0f0' },
+                            horzLines: { color: '#f0f0f0' }
+                        },
+                        timeScale: {
+                            timeVisible: true,
+                            secondsVisible: false,
+                            borderColor: '#D6DCDE',
+                        },
+                        rightPriceScale: {
+                            borderColor: '#D6DCDE',
+                        },
+                        crosshair: {
+                            mode: LightweightCharts.CrosshairMode.Normal,
+                        },
+                    });
+                    
+                    // Tạo MACD Line series
+                    const macdLineSeries = macdChart.addLineSeries({
+                        color: '#2196F3',
+                        lineWidth: 2,
+                        title: 'MACD',
+                        priceLineVisible: false,
+                    });
+                    
+                    // Tạo MACD Signal series
+                    const macdSignalSeries = macdChart.addLineSeries({
+                        color: '#FF9800',
+                        lineWidth: 2,
+                        title: 'Signal',
+                        priceLineVisible: false,
+                    });
+                    
+                    // Tạo MACD Histogram series
+                    if (macdHistogramData.length > 0) {
+                        const macdHistogramSeries = macdChart.addHistogramSeries({
+                            color: '#26a69a',
+                            priceFormat: {
+                                type: 'price',
+                            },
+                            title: 'Histogram',
+                        });
+                        
+                        // Format histogram data with colors
+                        const histogramData = macdHistogramData.map(item => ({
+                            time: item.time,
+                            value: item.value,
+                            color: item.value >= 0 ? '#26a69a' : '#ef5350'
+                        }));
+                        
+                        macdHistogramSeries.setData(histogramData);
+                    }
+                    
+                    // Set dữ liệu MACD
+                    macdLineSeries.setData(macdLineData);
+                    macdSignalSeries.setData(macdSignalData);
+                    
+                    // Lưu chart để có thể ẩn/hiện sau này
+                    window.macdChart = macdChart;
+                    
+                    // Đồng bộ time scale giữa các biểu đồ
+                    chart.timeScale().subscribeVisibleTimeRangeChange(timeRange => {
+                        macdChart.timeScale().setVisibleRange(timeRange);
+                    });
+                    
+                    macdChart.timeScale().subscribeVisibleTimeRangeChange(timeRange => {
+                        chart.timeScale().setVisibleRange(timeRange);
+                    });
+                }
+                
+                // Đảm bảo hiển thị đủ toàn bộ biểu đồ
+                chart.timeScale().fitContent();
+                
+                // Xử lý hiển thị / ẩn các chỉ báo khi người dùng click vào checkbox
+                document.getElementById('showMA5').addEventListener('change', function() {
+                    if (window.ma5Series) {
+                        window.ma5Series.applyOptions({
+                            visible: this.checked
+                        });
+                    }
+                });
+                
+                document.getElementById('showMA20').addEventListener('change', function() {
+                    if (window.ma20Series) {
+                        window.ma20Series.applyOptions({
+                            visible: this.checked
+                        });
+                    }
+                });
+                
+                document.getElementById('showRSI').addEventListener('change', function() {
+                    if (window.rsiChart) {
+                        document.getElementById('rsi-container').style.display = this.checked ? 'block' : 'none';
+                        if (this.checked) {
+                            window.rsiChart.applyOptions({
+                                width: document.getElementById('rsi-container').clientWidth
+                            });
+                        }
+                    }
+                });
+                
+                document.getElementById('showMACD').addEventListener('change', function() {
+                    if (window.macdChart) {
+                        document.getElementById('macd-container').style.display = this.checked ? 'block' : 'none';
+                        if (this.checked) {
+                            window.macdChart.applyOptions({
+                                width: document.getElementById('macd-container').clientWidth
+                            });
+                        }
+                    }
+                });
+                
+                // Thêm chi tiết thông tin chỉ báo
+                try {
+                    // Tạo debug info cho admin
+                    if (document.getElementById('debugInfo')) {
+                        let indicatorInfo = `
+                            <div class="mt-3 p-2 border rounded">
+                                <strong>Chỉ báo kỹ thuật:</strong>
+                                <ul>
+                                    <li>MA5: ${ma5Data.length} điểm dữ liệu</li>
+                                    <li>MA20: ${ma20Data.length} điểm dữ liệu</li>
+                                    <li>RSI: ${rsiData.length} điểm dữ liệu</li>
+                                    <li>MACD Line: ${macdLineData.length} điểm dữ liệu</li>
+                                    <li>MACD Signal: ${macdSignalData.length} điểm dữ liệu</li>
+                                    <li>MACD Histogram: ${macdHistogramData.length} điểm dữ liệu</li>
+                                </ul>
+                            </div>
+                        `;
+                        document.querySelector('.chart-modal-content').insertAdjacentHTML('beforeend', indicatorInfo);
+                    }
+                } catch (e) {
+                    console.error('Error adding indicator info:', e);
+                }
+                
+                // Thêm chi tiết ngày gần nhất
+                try {
+                    const lastDataPoint = candles[candles.length - 1];
+                    const lastTimeParts = lastDataPoint.time.split('-');
+                    const dateStr = lastTimeParts.length === 3 ? 
+                        `${lastTimeParts[2]}/${lastTimeParts[1]}/${lastTimeParts[0]}` : 
+                        'Dữ liệu mới nhất';
+                    
+                    // Thêm thông tin tóm tắt giao dịch gần nhất
+                    const lastPriceInfo = document.createElement('div');
+                    lastPriceInfo.className = 'last-price-info';
+                    lastPriceInfo.innerHTML = `
+                        <div class="price-date-info">
+                            <div class="price-date">${dateStr}</div>
+                            <div class="price-summary">
+                                <div class="price-item">Mở: <span class="price-value">${Number(lastDataPoint.open).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Cao: <span class="price-value">${Number(lastDataPoint.high).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Thấp: <span class="price-value">${Number(lastDataPoint.low).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Đóng: <span class="price-value">${Number(lastDataPoint.close).toLocaleString('vi-VN')}</span></div>
+                                ${lastDataPoint.volume ? `<div class="price-item">KL: <span class="price-value">${Number(lastDataPoint.volume).toLocaleString('vi-VN')}</span></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    chartContainer.parentNode.insertBefore(lastPriceInfo, chartContainer.nextSibling);
+                } catch (e) {
+                    console.error('Error adding last price info:', e);
+                }
+            } catch (err) {
+                console.error('Error setting chart data:', err);
+                document.getElementById('chart-container').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Không thể tạo biểu đồ. Vui lòng thử lại sau.
+                        <div class="small mt-2">${err.message}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Hàm để vẽ biểu đồ dạng cũ (tương thích với API cũ)
+        function renderLegacyChart(data) {
+            try {
+                // Xóa màn hình loading trước khi hiển thị biểu đồ
+                const chartContainer = document.getElementById('chart-container');
+                chartContainer.innerHTML = '';
+                
+                // Tạo lại biểu đồ với kích thước đúng
+                chart = LightweightCharts.createChart(chartContainer, {
+                    width: chartContainer.clientWidth,
+                    height: 450,
+                    layout: { 
+                        backgroundColor: '#ffffff',
+                        textColor: '#333',
+                        fontSize: 12,
+                        fontFamily: 'Arial, sans-serif',
+                    },
+                    grid: {
+                        vertLines: { color: '#f0f0f0' },
+                        horzLines: { color: '#f0f0f0' }
+                    },
+                    timeScale: {
+                        timeVisible: true,
+                        secondsVisible: false,
+                        borderColor: '#D6DCDE',
+                    },
+                    rightPriceScale: {
+                        borderColor: '#D6DCDE',
+                    },
+                    crosshair: {
+                        mode: LightweightCharts.CrosshairMode.Normal,
+                        vertLine: {
+                            color: 'rgba(70, 130, 180, 0.5)',
+                            width: 1,
+                            style: 1,
+                            labelBackgroundColor: '#1a73e8',
+                        },
+                        horzLine: {
+                            color: 'rgba(70, 130, 180, 0.5)',
+                            width: 1,
+                            style: 1,
+                            labelBackgroundColor: '#1a73e8',
+                        },
+                    },
+                    localization: {
+                        dateFormat: 'dd/MM/yyyy',
+                    },
+                });
+                
+                candleSeries = chart.addCandlestickSeries({
+                    upColor: '#26a69a',
+                    downColor: '#ef5350',
+                    borderVisible: false,
+                    wickUpColor: '#26a69a',
+                    wickDownColor: '#ef5350'
+                });
+                
+                // Xử lý dữ liệu thời gian
+                const formattedData = data.map(item => {
+                    // Kiểm tra định dạng thời gian
+                    let timeStr = item.time;
+                    
+                    // Nếu đã là string và có định dạng YYYY-MM-DD thì giữ nguyên
+                    if (typeof timeStr === 'string' && timeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        return item;
+                    }
+                    
+                    // Nếu là Date object hoặc timestamp, chuyển thành YYYY-MM-DD
+                    try {
+                        const date = new Date(timeStr);
+                        if (!isNaN(date.getTime())) {
+                            const formattedTime = date.toISOString().split('T')[0];
+                            return {
+                                ...item,
+                                time: formattedTime
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Error parsing date:', timeStr, e);
+                    }
+                    
+                    // Nếu không thể chuyển đổi, giữ nguyên
+                    return item;
+                });
+                
+                // Thử set dữ liệu
+                try {
+                    candleSeries.setData(formattedData);
+                    // Đảm bảo hiển thị đủ toàn bộ biểu đồ
+                    chart.timeScale().fitContent();
+                    console.log('Chart data set successfully');
+                } catch (err) {
+                    console.error('Error setting chart data:', err);
+                    // Thử xử lý lại với định dạng khác nếu cần
+                    try {
+                        // Nếu thất bại, thử chuyển đổi sang cấu trúc đơn giản hơn
+                        const simplifiedData = formattedData.map(item => ({
+                            time: item.time,
+                            open: Number(item.open),
+                            high: Number(item.high),
+                            low: Number(item.low),
+                            close: Number(item.close),
+                            volume: item.volume ? Number(item.volume) : undefined
+                        }));
+                        console.log('Simplified data sample:', simplifiedData.slice(0, 2));
+                        candleSeries.setData(simplifiedData);
+                        chart.timeScale().fitContent();
+                        console.log('Chart data set with simplified format');
+                    } catch (finalErr) {
+                        console.error('Final error setting chart data:', finalErr);
+                        throw finalErr;
+                    }
+                }
+                
+                // Add volume series nếu có dữ liệu khối lượng
+                if (data[0].volume) {
+                    try {
+                        const volumeSeries = chart.addHistogramSeries({
+                            color: '#26a69a80',
+                            priceFormat: {
+                                type: 'volume',
+                            },
+                            priceScaleId: '',
+                            scaleMargins: {
+                                top: 0.8,
+                                bottom: 0,
+                            },
+                        });
+                        
+                        const volumeData = formattedData.map(item => ({
+                            time: item.time,
+                            value: Number(item.volume),
+                            color: item.close >= item.open ? '#26a69a80' : '#ef535080'
+                        }));
+                        
+                        volumeSeries.setData(volumeData);
+                        console.log('Volume data set successfully');
+                    } catch (e) {
+                        console.error('Error setting volume data:', e);
+                    }
+                }
+                
+                // Thêm chi tiết ngày gần nhất
+                try {
+                    const lastDataPoint = formattedData[formattedData.length - 1];
+                    const lastTimeParts = lastDataPoint.time.split('-');
+                    const dateStr = lastTimeParts.length === 3 ? 
+                        `${lastTimeParts[2]}/${lastTimeParts[1]}/${lastTimeParts[0]}` : 
+                        'Dữ liệu mới nhất';
+                    
+                    // Thêm thông tin tóm tắt giao dịch gần nhất
+                    const lastPriceInfo = document.createElement('div');
+                    lastPriceInfo.className = 'last-price-info';
+                    lastPriceInfo.innerHTML = `
+                        <div class="price-date-info">
+                            <div class="price-date">${dateStr}</div>
+                            <div class="price-summary">
+                                <div class="price-item">Mở: <span class="price-value">${Number(lastDataPoint.open).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Cao: <span class="price-value">${Number(lastDataPoint.high).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Thấp: <span class="price-value">${Number(lastDataPoint.low).toLocaleString('vi-VN')}</span></div>
+                                <div class="price-item">Đóng: <span class="price-value">${Number(lastDataPoint.close).toLocaleString('vi-VN')}</span></div>
+                                ${lastDataPoint.volume ? `<div class="price-item">KL: <span class="price-value">${Number(lastDataPoint.volume).toLocaleString('vi-VN')}</span></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    chartContainer.parentNode.insertBefore(lastPriceInfo, chartContainer.nextSibling);
+                } catch (e) {
+                    console.error('Error adding last price info:', e);
+                }
+            } catch (error) {
+                console.error('Error rendering legacy chart:', error);
+                document.getElementById('chart-container').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Không thể tải dữ liệu biểu đồ. Vui lòng thử lại sau.
+                        <div class="small mt-2">${error.message}</div>
+                    </div>
+                `;
+            }
         }
         
         // Handle window resize for chart

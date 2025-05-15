@@ -941,12 +941,37 @@ def get_historical_data_api(request, stock_code):
     return JsonResponse(historical_data.to_dict(orient='records'), safe=False)
 
 def get_stock_historical_data(request, symbol):
+    """Lấy dữ liệu lịch sử giá cổ phiếu cho biểu đồ"""
     try:
-        # Lấy dữ liệu lịch sử từ PostgreSQL
-        from .postgres_chart_service import get_postgres_chart_service
+        symbol = symbol.upper()
+        logger.info(f"Lấy dữ liệu lịch sử cho mã {symbol}")
+        
+        # Sử dụng dịch vụ PostgreSQL để lấy dữ liệu
+        from .vnstock_services import get_technical_indicators
         postgres_service = get_postgres_chart_service()
         
-        # Lấy dữ liệu cho mã cổ phiếu
+        # Ưu tiên lấy dữ liệu từ hàm get_technical_indicators vừa tạo
+        technical_data = get_technical_indicators(symbol)
+        
+        if technical_data and technical_data.get('success', False):
+            # Định dạng dữ liệu cho biểu đồ
+            chart_data = technical_data.get('candles', [])
+            
+            # Thêm các chỉ báo kỹ thuật vào từng điểm dữ liệu nếu cần
+            # Điều này là tùy chọn, vì trong phần JavaScript chúng ta sẽ sử dụng dữ liệu riêng biệt
+            
+            logger.info(f"Trả về dữ liệu biểu đồ cho mã {symbol}: {len(chart_data)} nến (từ get_technical_indicators)")
+            return JsonResponse({
+                'candles': chart_data,
+                'ma5': technical_data.get('ma5', []),
+                'ma20': technical_data.get('ma20', []),
+                'rsi': technical_data.get('rsi', []),
+                'macd_line': technical_data.get('macd_line', []),
+                'macd_signal': technical_data.get('macd_signal', []),
+                'macd_histogram': technical_data.get('macd_histogram', [])
+            }, safe=False)
+        
+        # Nếu không có dữ liệu từ hàm mới, sử dụng lại logic cũ
         stock_data = postgres_service.get_stock_data(symbol)
         
         if stock_data is None or not stock_data:
@@ -964,6 +989,7 @@ def get_stock_historical_data(request, symbol):
                     'low': float(row['low']),
                     'close': float(row['close'])
                 })
+            return JsonResponse(chart_data, safe=False)
         else:
             # Định dạng dữ liệu cho biểu đồ với đầy đủ các chỉ báo kỹ thuật
             formatted_data = postgres_service.format_for_chart(stock_data)
@@ -972,58 +998,36 @@ def get_stock_historical_data(request, symbol):
                 logger.warning(f"Dữ liệu biểu đồ từ PostgreSQL không hợp lệ cho mã {symbol}")
                 return JsonResponse({'error': 'Dữ liệu biểu đồ không hợp lệ'}, status=500)
             
-            # Sử dụng dữ liệu nến từ chart_data đã được định dạng
-            candles = formatted_data.get('candles', [])
-            
-            # Thêm các chỉ báo kỹ thuật vào dữ liệu nến
-            ma5_data = formatted_data.get('ma5', [])
-            ma20_data = formatted_data.get('ma20', [])
-            rsi_data = formatted_data.get('rsi', [])
-            macd_line_data = formatted_data.get('macd_line', [])
-            macd_signal_data = formatted_data.get('macd_signal', [])
-            macd_histogram_data = formatted_data.get('macd_histogram', [])
-            
-            # Kết hợp dữ liệu nến với các chỉ báo kỹ thuật
-            chart_data = []
-            for candle in candles:
-                time_value = candle.get('time')
-                candle_with_indicators = dict(candle)
-                
-                # Thêm MA5
-                ma5_value = next((item.get('value') for item in ma5_data if item.get('time') == time_value), None)
-                if ma5_value is not None:
-                    candle_with_indicators['ma5'] = ma5_value
-                
-                # Thêm MA20
-                ma20_value = next((item.get('value') for item in ma20_data if item.get('time') == time_value), None)
-                if ma20_value is not None:
-                    candle_with_indicators['ma20'] = ma20_value
-                
-                # Thêm RSI
-                rsi_value = next((item.get('value') for item in rsi_data if item.get('time') == time_value), None)
-                if rsi_value is not None:
-                    candle_with_indicators['rsi'] = rsi_value
-                
-                # Thêm MACD
-                macd_line = next((item.get('value') for item in macd_line_data if item.get('time') == time_value), None)
-                if macd_line is not None:
-                    candle_with_indicators['macd_line'] = macd_line
-                
-                macd_signal = next((item.get('value') for item in macd_signal_data if item.get('time') == time_value), None)
-                if macd_signal is not None:
-                    candle_with_indicators['macd_signal'] = macd_signal
-                
-                macd_histogram = next((item.get('value') for item in macd_histogram_data if item.get('time') == time_value), None)
-                if macd_histogram is not None:
-                    candle_with_indicators['macd_histogram'] = macd_histogram
-                
-                chart_data.append(candle_with_indicators)
+            # Trả về dữ liệu định dạng mới với tất cả các chỉ báo
+            logger.info(f"Trả về dữ liệu biểu đồ cho mã {symbol} từ postgres_service")
+            return JsonResponse(formatted_data, safe=False)
         
-        logger.info(f"Trả về dữ liệu biểu đồ cho mã {symbol}: {len(chart_data)} nến")
-        return JsonResponse(chart_data, safe=False)
     except Exception as e:
         logger.error(f"Lỗi khi lấy dữ liệu cho {symbol}: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+def get_technical_indicators_api(request, symbol):
+    """API endpoint để lấy các chỉ báo kỹ thuật cho biểu đồ"""
+    try:
+        symbol = symbol.upper()
+        from .vnstock_services import get_technical_indicators
+        
+        # Lấy dữ liệu chỉ báo kỹ thuật
+        technical_data = get_technical_indicators(symbol)
+        
+        if not technical_data or not technical_data.get('success', False):
+            return JsonResponse({
+                'success': False,
+                'error': 'Không tìm thấy dữ liệu chỉ báo kỹ thuật'
+            }, status=404)
+        
+        return JsonResponse(technical_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @csrf_exempt
 @require_POST
