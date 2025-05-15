@@ -2,7 +2,6 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import views_wallet
-from . import db_chart_views
 import portfolio.views
 
 urlpatterns = [

@@ -21,6 +21,66 @@ def get_ai_response(message):
             "Content-Type": "application/json"
         }
         
+        # Kiểm tra nếu tin nhắn chứa từ khóa về cổ phiếu hoặc thị trường chứng khoán
+        stock_keywords = ["cổ phiếu", "chứng khoán", "VN-Index", "thị trường", "giá", "rsi", "ma", "macd"]
+        stock_symbol_pattern = r'\b[A-Z]{3,4}\b'  # Mẫu regex cho mã cổ phiếu
+        
+        import re
+        # Tìm kiếm các mã cổ phiếu trong tin nhắn
+        possible_symbols = re.findall(stock_symbol_pattern, message.upper())
+        
+        stock_data_context = ""
+        market_context = ""
+        
+        # Nếu có từ khóa về cổ phiếu, thị trường, lấy dữ liệu từ PostgreSQL
+        if any(keyword in message.lower() for keyword in stock_keywords) or possible_symbols:
+            # Lấy dữ liệu thị trường chung
+            market_data = get_stock_data_for_ai()
+            if market_data.get('success', False) and market_data.get('count', 0) > 0:
+                stock_count = market_data.get('count', 0)
+                # Chọn 5 cổ phiếu làm mẫu
+                sample_stocks = market_data.get('data', [])[:5]
+                
+                market_context = f"""
+                Thông tin thị trường (dựa trên dữ liệu của {stock_count} cổ phiếu):
+                
+                Những cổ phiếu tiêu biểu trên sàn:
+                """
+                
+                for stock in sample_stocks:
+                    symbol = stock.get('symbol', '')
+                    price = stock.get('current_price', 0)
+                    trend = stock.get('trend', 'SIDEWAYS')
+                    
+                    market_context += f"- {symbol}: {price:,.0f} đồng ({trend})\n"
+            
+            # Nếu có mã cổ phiếu cụ thể, lấy dữ liệu chi tiết
+            for symbol in possible_symbols:
+                stock_detail = get_stock_data_for_ai(symbol)
+                
+                if stock_detail.get('success', False) and stock_detail.get('count', 0) > 0:
+                    stock = stock_detail.get('data', [])[0]
+                    
+                    stock_data_context += f"""
+                    Thông tin cổ phiếu {symbol}:
+                    - Giá hiện tại: {stock.get('current_price', 0):,.0f} đồng
+                    - Giá trần: {stock.get('ceiling', 0):,.0f} đồng
+                    - Giá sàn: {stock.get('floor', 0):,.0f} đồng
+                    - Khối lượng: {stock.get('vol', 0):,.0f}
+                    
+                    Chỉ báo kỹ thuật:
+                    - RSI: {stock.get('technical_indicators', {}).get('rsi', 'N/A')}
+                    - MA5: {stock.get('technical_indicators', {}).get('ma5', 'N/A')}
+                    - MA20: {stock.get('technical_indicators', {}).get('ma20', 'N/A')}
+                    - MACD Line: {stock.get('technical_indicators', {}).get('macd_line', 'N/A')}
+                    - MACD Signal: {stock.get('technical_indicators', {}).get('macd_signal', 'N/A')}
+                    - MACD Histogram: {stock.get('technical_indicators', {}).get('macd_histogram', 'N/A')}
+                    
+                    Xu hướng: {stock.get('trend', 'SIDEWAYS')}
+                    Khuyến nghị: {stock.get('technical_indicators', {}).get('suggestion', 'HOLD')}
+                    Lý do: {stock.get('technical_indicators', {}).get('reason', 'N/A')}
+                    """
+        
         data = {
             "contents": [
                 {
@@ -56,6 +116,10 @@ def get_ai_response(message):
                             | Dữ liệu 1 | Dữ liệu 2 | Dữ liệu 3 |
                          
                          Trả lời phải đẹp, có cấu trúc rõ ràng, sử dụng 1-2 emoji phù hợp nếu cần thiết.
+                         
+                         {market_context}
+                         
+                         {stock_data_context}
 
                          Người dùng yêu cầu: {message}"""}
                     ]
@@ -72,7 +136,7 @@ def get_ai_response(message):
             return f"Đã xảy ra lỗi khi kết nối với API: {response.status_code}"
     
     except Exception as e:
-        return f"Đã xảy ra lỗi: {str(e)}" 
+        return f"Đã xảy ra lỗi: {str(e)}"
 
 def generate_qr_code(amount, transaction_id, username=None):
     """
@@ -261,3 +325,133 @@ def get_auth0_user_profile(access_token):
         # Log any exceptions for debugging
         print(f"Error fetching Auth0 user profile: {str(e)}")
         return {} 
+
+def get_stock_data_for_ai(symbol=None):
+    """
+    Truy vấn dữ liệu cổ phiếu từ PostgreSQL cho chatbot AI
+    
+    Args:
+        symbol (str, optional): Mã cổ phiếu cần truy vấn. Nếu None, lấy tất cả các cổ phiếu.
+        
+    Returns:
+        dict: Dữ liệu cổ phiếu được định dạng cho AI sử dụng
+    """
+    import psycopg2
+    import json
+    from datetime import datetime
+    
+    try:
+        # Thông tin kết nối PostgreSQL - lấy từ biến môi trường hoặc dùng giá trị mặc định
+        PG_HOST = 'db'  # tên service trong docker-compose
+        PG_PORT = '5432'
+        PG_DB = 'db_for_pm'
+        PG_USER = 'airflow'
+        PG_PASSWORD = 'admin123'
+        
+        # Kết nối đến PostgreSQL
+        conn = psycopg2.connect(
+            host=PG_HOST,
+            port=PG_PORT,
+            dbname=PG_DB,
+            user=PG_USER,
+            password=PG_PASSWORD
+        )
+        
+        # Tạo cursor
+        cur = conn.cursor()
+        
+        # Truy vấn SQL
+        if symbol:
+            # Nếu có symbol, lấy dữ liệu của mã cổ phiếu cụ thể
+            query = """
+            SELECT symbol, current_price, ceiling, floor, vol, json_data, updated_at
+            FROM public.stock_processed_data
+            WHERE symbol = %s
+            """
+            cur.execute(query, (symbol,))
+        else:
+            # Lấy tất cả các cổ phiếu
+            query = """
+            SELECT symbol, current_price, ceiling, floor, vol, json_data, updated_at
+            FROM public.stock_processed_data
+            ORDER BY symbol
+            """
+            cur.execute(query)
+        
+        # Lấy kết quả
+        rows = cur.fetchall()
+        
+        # Đóng kết nối
+        cur.close()
+        conn.close()
+        
+        # Tạo cấu trúc dữ liệu để trả về
+        result = {
+            'success': True,
+            'count': len(rows),
+            'timestamp': datetime.now().isoformat(),
+            'data': []
+        }
+        
+        # Xử lý kết quả
+        for row in rows:
+            symbol, current_price, ceiling, floor, vol, json_data, updated_at = row
+            
+            # Chuyển đổi JSONB thành dict
+            stock_json = json_data if isinstance(json_data, dict) else json.loads(json_data)
+            
+            # Lấy dữ liệu lịch sử và chỉ báo kỹ thuật
+            historical_data = stock_json.get('historical_processed', [])
+            
+            # Tạo đối tượng dữ liệu cổ phiếu
+            stock_data = {
+                'symbol': symbol,
+                'current_price': current_price,
+                'ceiling': ceiling,
+                'floor': floor, 
+                'vol': vol,
+                'updated_at': updated_at.isoformat() if updated_at else None,
+                'technical_indicators': {}
+            }
+            
+            # Thêm chỉ báo kỹ thuật mới nhất nếu có
+            if historical_data and len(historical_data) > 0:
+                latest_data = historical_data[-1]
+                stock_data['technical_indicators'] = {
+                    'rsi': latest_data.get('rsi'),
+                    'ma5': latest_data.get('ma5'),
+                    'ma20': latest_data.get('ma20'),
+                    'macd_line': latest_data.get('macd_line'),
+                    'macd_signal': latest_data.get('macd_signal'),
+                    'macd_histogram': latest_data.get('macd_histogram'),
+                    'suggestion': latest_data.get('suggestion', 'HOLD'),
+                    'reason': latest_data.get('reason', '')
+                }
+                
+                # Thêm thông tin về xu hướng
+                if len(historical_data) >= 5:
+                    # Lấy 5 ngày gần nhất
+                    recent_data = historical_data[-5:]
+                    # Phân tích xu hướng
+                    price_trend = []
+                    for item in recent_data:
+                        if 'close' in item:
+                            price_trend.append(item['close'])
+                    
+                    if len(price_trend) >= 2:
+                        if price_trend[-1] > price_trend[0]:
+                            stock_data['trend'] = 'UPTREND'
+                        elif price_trend[-1] < price_trend[0]:
+                            stock_data['trend'] = 'DOWNTREND'
+                        else:
+                            stock_data['trend'] = 'SIDEWAYS'
+            
+            result['data'].append(stock_data)
+        
+        return result
+    
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        } 
