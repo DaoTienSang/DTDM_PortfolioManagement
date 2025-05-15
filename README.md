@@ -143,3 +143,22 @@ DATABASE_HOST=db
 Chạy lệnh: `docker-compose up --build` để build các Image \
 
 - **Truy cập trình duyệt ở địa chỉ: http://localhost:8000/**
+
+### Truy cập các dịch vụ
+
+| Dịch vụ | URL | Thông tin đăng nhập |
+|---------|-----|---------------------|
+| Ứng dụng chính | http://localhost:8000 | - |
+| Airflow Dashboard | http://localhost:8080 | username: admin<br>password: admin |
+| Kafka UI | http://localhost:8180 | - |
+| Spark UI | http://localhost:4040 | - |
+
+> **Lưu ý quan trọng:** Do hệ thống hoạt động theo pipeline, một số containers cần được khởi động thủ công theo thứ tự:
+> - airflow_init
+> - kafka_setup  
+> - spark_stock_analysis
+> - ...
+>
+> Điều này đảm bảo các dịch vụ phụ thuộc được khởi động đúng trình tự.
+
+
