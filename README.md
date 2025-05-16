@@ -20,7 +20,7 @@ Hệ thống quản lý danh mục đầu tư giúp người dùng theo dõi, mu
 - Tạo và quản lý danh mục đầu tư
 - Mua, bán tài sản tài chính
 - Theo dõi biến động giá thị trường
-- Xem biểu đồ nến cho các mã cổ phiếu với đầy đủ:  ( Phần này hiện tại đang lỗi, chỉ có data đã tính toán chưa vẽ được biểu đồ )
+- Xem biểu đồ nến cho các mã cổ phiếu với đầy đủ:  
   - Đường trung bình động MA5, MA20
   - Chỉ báo MACD (Moving Average Convergence Divergence)
   - Chỉ báo RSI (Relative Strength Index)
@@ -121,7 +121,7 @@ Hệ thống quản lý danh mục đầu tư giúp người dùng theo dõi, mu
 - `login.html`, `register.html`: Form đăng nhập và đăng ký
 - `market.html`: Hiển thị bảng giá và biểu đồ thị trường với các chỉ báo kỹ thuật
 
-### Tính Năng Thị Trường Chứng Khoán ( Phần này hiện tại đang lỗi, chỉ có data đã tính toán chưa vẽ được biểu đồ)
+### Tính Năng Thị Trường Chứng Khoán 
 - **Bảng giá thị trường**: Hiển thị giá trần, giá sàn, giá tham chiếu, giá khớp lệnh và khối lượng của các mã cổ phiếu từ dữ liệu Kafka
 - **Biểu đồ nến**: Hiển thị biểu đồ nến với đường MA5 và MA20
 - **Phân tích kỹ thuật**: Hiển thị các chỉ số MACD, RSI và phần khuyến nghị dựa trên phân tích kỹ thuật
@@ -153,7 +153,7 @@ Chạy lệnh: `docker-compose up --build` để build các Image \
 | Kafka UI | http://localhost:8180 | - |
 | Spark UI | http://localhost:4040 | - |
 
-> **Lưu ý quan trọng:** Do hệ thống hoạt động theo pipeline, một số containers cần được khởi động thủ công theo thứ tự:
+> **Lưu ý quan trọng:** Do hệ thống hoạt động theo pipeline, một số containers cần được khởi động thủ công theo thứ tự ( Phải đợi Airflow Build xong thì chúng ta sẽ Khởi động airflow_init để tạo user -> Sau khi đã truy cập dược trang chủ của Airflow thì chúng ta sẽ tiếp tục khởi động kafka_setup )
 > - airflow_init
 > - kafka_setup  
 > - spark_stock_analysis
