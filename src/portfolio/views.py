@@ -16,7 +16,6 @@ from .utils import get_ai_response, get_auth0_user_profile
 from django.urls import reverse
 from urllib.parse import quote_plus, urlencode
 import os
-# from authlib.integrations.django_client import OAuth  # Comment out this import
 from django.conf import settings
 from vnstock import Vnstock
 import json

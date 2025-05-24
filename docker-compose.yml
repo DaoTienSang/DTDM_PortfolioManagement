@@ -248,33 +248,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  kafka-postgres:
-    image: python:3.9-slim
-    container_name: kafka-postgres
-    depends_on:
-      - kafka
-      - kafka-setup
-      - db
-    environment:
-      - KAFKA_BROKER=kafka:9092
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=${DATABASE_NAME}
-      - DB_USER=${DATABASE_USER}
-      - DB_PASSWORD=${DATABASE_PASSWORD}
-    volumes:
-      - ./kafka_to_postgres.py:/app/kafka_to_postgres.py
-    command: >
-      bash -c "pip install kafka-python psycopg2-binary && 
-      python /app/kafka_to_postgres.py"
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    
 volumes:
   postgres_data:
   static_volume:
