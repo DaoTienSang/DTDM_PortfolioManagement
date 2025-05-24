@@ -2,6 +2,8 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import views_wallet
+from . import auth_views
+from . import market_views
 import portfolio.views
 
 urlpatterns = [
@@ -25,23 +27,21 @@ urlpatterns = [
     path('transactions/create/', views.transaction_create, name='transaction_create'),
     
     # Auth0 authentication
-    path('register/', views.register, name='register'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('social/complete/auth0/', views.callback, name='callback'),
+    path('register/', auth_views.register, name='register'),
+    path('login/', auth_views.login_view, name='login'),
+    path('logout/', auth_views.logout_view, name='logout'),
+    path('social/complete/auth0/', auth_views.callback, name='callback'),
     
     # User profile
     path('profile/', views.user_profile, name='user_profile'),
     
     # Trang thị trường và API Kafka
-    path('market/', views.market, name='market'),
-    path('api/historical-data/<str:symbol>/', views.get_stock_historical_data, name='get_stock_historical_data'),
-    path('api/technical-indicators/<str:symbol>/', views.get_technical_indicators_api, name='get_technical_indicators_api'),
+    path('market/', market_views.market, name='market'),
+    path('api/historical-data/<str:symbol>/', market_views.get_stock_historical_data, name='get_stock_historical_data'),
+    path('api/technical-indicators/<str:symbol>/', market_views.get_technical_indicators_api, name='get_technical_indicators_api'),
     
     # Kafka API endpoints
-    path('api/kafka/stock-data/<str:symbol>/', views.get_kafka_stock_data, name='get_kafka_stock_data'),
-    path('api/kafka/refresh-symbol/<str:symbol>/', views.refresh_kafka_symbol, name='refresh_kafka_symbol'),
-    path('api/kafka/symbols/', views.get_stock_symbols, name='get_kafka_available_symbols'),
+    path('api/get-stock-symbols/', market_views.get_stock_symbols, name='get_stock_symbols'),
     
     # URLs cho ví điện tử
     path('wallet/', views_wallet.wallet, name='wallet'),
@@ -68,13 +68,13 @@ urlpatterns = [
     path('wallet/wallet-transactions/', views_wallet.wallet_transactions, name='wallet_transactions_list'),
     
     # API cho giao dịch
-    path('api/get_stock_price/<str:symbol>/', views.get_stock_price, name='get_stock_price'),
-    path('api/create_asset_from_symbol/', views.create_asset_from_symbol, name='create_asset_from_symbol'),
+    path('api/get_stock_price/<str:symbol>/', market_views.get_stock_price, name='get_stock_price'),
+    path('api/create_asset_from_symbol/', market_views.create_asset_from_symbol, name='create_asset_from_symbol'),
     
     # Thêm URL mới để khớp với frontend
-    path('api/stock-price/<str:symbol>/', views.get_stock_price, name='get_stock_price_alt'),
-    path('api/create-asset/', views.create_asset_from_symbol, name='create_asset_from_symbol_alt'),
-    path('api/stock-symbols-info/', views.get_stock_symbols_info, name='get_stock_symbols_info_alt'),
+    path('api/stock-price/<str:symbol>/', market_views.get_stock_price, name='get_stock_price_alt'),
+    path('api/create-asset/', market_views.create_asset_from_symbol, name='create_asset_from_symbol_alt'),
+    path('api/stock-symbols-info/', market_views.get_stock_symbols_info, name='get_stock_symbols_info_alt'),
     
     # AI Chat API
     path('api/chat/', views.ai_chat_api, name='ai_chat_api'),
@@ -85,18 +85,6 @@ urlpatterns = [
     path('debug/assets/', views.debug_assets, name='debug_assets'),
     path('sync_assets/', views.sync_assets, name='sync_assets'),
     path('update_stock_prices/', views.update_stock_prices, name='update_stock_prices'),
-    path('api/stock_symbols/', views.get_stock_symbols, name='get_stock_symbols'),
-    path('api/get_stock_symbols_info/', views.get_stock_symbols_info, name='get_stock_symbols_info'),
-    
-    # Debug API 
-    path('api/debug/price-board/', views.debug_price_board, name='debug_price_board'),
-    
-    # Trang test đơn giản
-    path('market/simple/', views.simple_market, name='simple_market'),
-    
-    # API để lấy dữ liệu dạng raw
-    path('api/debug/raw-data/', views.raw_data_api, name='raw_data_api'),
-    
-    # Trang thị trường mới (không sử dụng JavaScript phức tạp)
-    path('market/new/', views.new_market, name='new_market'),
+    path('api/stock_symbols/', market_views.get_stock_symbols, name='get_stock_symbols'),
+    path('api/get_stock_symbols_info/', market_views.get_stock_symbols_info, name='get_stock_symbols_info'),
 ]
