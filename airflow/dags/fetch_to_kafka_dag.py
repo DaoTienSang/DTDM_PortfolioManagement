@@ -125,10 +125,10 @@ def fetch_and_push_to_kafka():
     batch_size = 3  # Xử lý 3 mã mỗi batch
     symbol_batches = [sample_symbols[i:i+batch_size] for i in range(0, len(sample_symbols), batch_size)]
     
-    print(f"🔄 Sẽ xử lý {len(sample_symbols)} mã cổ phiếu trong {len(symbol_batches)} batch")
+    print(f"Sẽ xử lý {len(sample_symbols)} mã cổ phiếu trong {len(symbol_batches)} batch")
     
     for batch_idx, symbol_batch in enumerate(symbol_batches):
-        print(f"🔄 Xử lý batch {batch_idx+1}/{len(symbol_batches)} với {len(symbol_batch)} mã...")
+        print(f"Xử lý batch {batch_idx+1}/{len(symbol_batches)} với {len(symbol_batch)} mã...")
         
         for symbol in symbol_batch:
             try:
@@ -236,7 +236,6 @@ with DAG(
     max_active_runs=1,  # Thêm để chỉ cho phép 1 instance của DAG chạy cùng lúc
     tags=['stock', 'vnstock', 'kafka'],
 ) as dag:
-
     task = PythonOperator(
         task_id='fetch_push_kafka',
         python_callable=fetch_and_push_to_kafka,
