@@ -284,7 +284,7 @@ class PostgresChartService:
             logger.error(f"Lỗi khi lấy dữ liệu bảng giá: {str(e)}")
             return pd.DataFrame()
 
-# Tạo instance để sử dụng trong các views
+
 _postgres_chart_service = None
 
 def get_postgres_chart_service():

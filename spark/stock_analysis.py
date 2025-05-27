@@ -6,7 +6,6 @@ import numpy as np
 import psycopg2
 import json
 
-# Khởi tạo SparkSession
 spark = SparkSession.builder \
     .appName("Stock Analysis") \
     .config("spark.sql.streaming.checkpointLocation", "/tmp/checkpoint") \
@@ -18,7 +17,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 spark.sparkContext.setLogLevel("INFO")
 
-# PostgreSQL connection parameters
+
 pg_params = {
     'host': 'db',
     'database': 'db_for_pm',
@@ -26,13 +25,11 @@ pg_params = {
     'password': 'admin123'
 }
 
-# Kiểm tra và tạo bảng PostgreSQL
+
 def init_postgres():
     try:
         conn = psycopg2.connect(**pg_params)
         cursor = conn.cursor()
-        cursor.execute("SELECT version();")
-        print(f"PostgreSQL version: {cursor.fetchone()[0]}")
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS stock_processed_data (
                 id SERIAL PRIMARY KEY,
@@ -46,8 +43,6 @@ def init_postgres():
             )
         """)
         conn.commit()
-        cursor.execute("SELECT COUNT(*) FROM stock_processed_data")
-        print(f"Records in stock_processed_data: {cursor.fetchone()[0]}")
         cursor.close()
         conn.close()
     except Exception as e:
@@ -56,7 +51,7 @@ def init_postgres():
 
 init_postgres()
 
-# Hàm lưu dữ liệu vào PostgreSQL
+
 def save_to_postgres(symbol, data):
     conn = None
     try:
@@ -87,7 +82,7 @@ def save_to_postgres(symbol, data):
         if conn:
             conn.close()
 
-# Schema cho dữ liệu JSON từ Kafka
+
 schema = StructType([
     StructField("symbol", StringType()),
     StructField("current_price", DoubleType()),
@@ -104,7 +99,7 @@ schema = StructType([
     ])))
 ])
 
-# Đọc và xử lý dữ liệu từ Kafka
+
 kafka_df = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "kafka:9092") \
@@ -117,6 +112,8 @@ parsed_df = kafka_df.selectExpr("CAST(value AS STRING) as json_data") \
     .select(from_json(col("json_data"), schema).alias("data")) \
     .select("data.*")
 
+print(kafka_df.printSchema())
+
 exploded_df = parsed_df.select(
     col("symbol"), col("current_price"), col("ceiling"), col("floor"), col("vol"),
     expr("explode(historical_data) as history")
@@ -128,7 +125,6 @@ exploded_df = parsed_df.select(
 ).withColumn("timestamp", to_timestamp(col("time"), "yyyy-MM-dd")) \
  .withColumn("date_str", expr("date_format(timestamp, 'yyyy-MM-dd')"))
 
-# Xử lý batch dữ liệu
 def process_batch(batch_df, batch_id):
     if batch_df.isEmpty():
         print(f"Batch {batch_id} is empty, skipping")
@@ -143,7 +139,7 @@ def process_batch(batch_df, batch_id):
         if len(symbol_df) == 0:
             continue
 
-        # Tính các chỉ số kỹ thuật
+
         symbol_df['ma5'] = symbol_df['close'].rolling(window=5).mean()
         symbol_df['ma20'] = symbol_df['close'].rolling(window=20).mean()
         delta = symbol_df['close'].diff()
@@ -151,13 +147,13 @@ def process_batch(batch_df, batch_id):
         loss = -delta.where(delta < 0, 0).rolling(window=14).mean()
         rs = np.where(loss == 0, 0, gain / loss)
         symbol_df['rsi'] = 100 - (100 / (1 + rs))
+        
         ema12 = symbol_df['close'].ewm(span=12, adjust=False).mean()
         ema26 = symbol_df['close'].ewm(span=26, adjust=False).mean()
         symbol_df['macd_line'] = ema12 - ema26
         symbol_df['macd_signal'] = symbol_df['macd_line'].ewm(span=9, adjust=False).mean()
         symbol_df['macd_histogram'] = symbol_df['macd_line'] - symbol_df['macd_signal']
 
-        # Đưa ra đề xuất
         conditions = [
             (symbol_df['ma5'] > symbol_df['ma20']) & (symbol_df['rsi'] < 70) & (symbol_df['macd_line'] > symbol_df['macd_signal']),
             (symbol_df['ma5'] > symbol_df['ma20']) & (symbol_df['rsi'] >= 70),
@@ -174,11 +170,9 @@ def process_batch(batch_df, batch_id):
         symbol_df['suggestion'] = np.select(conditions, choices, default='HOLD')
         symbol_df['reason'] = np.select(conditions, reasons, default="Neutral: HOLD")
 
-        # Chuẩn bị dữ liệu lưu trữ
-        current_info = symbol_df.iloc[-1] # Lấy thông tin từ bản ghi cuối cùng của symbol_df
+
+        current_info = symbol_df.iloc[-1] 
         
-        # Lấy giá trị current_price, ceiling, floor, vol gốc từ batch_df (dữ liệu Kafka input)
-        # thay vì từ symbol_df.iloc[-1] để có giá trị "live" nhất
         original_kafka_info = batch_df.filter(col("symbol") == symbol) \
                                  .select("current_price", "ceiling", "floor", "vol") \
                                  .distinct() \
@@ -207,10 +201,8 @@ def process_batch(batch_df, batch_id):
             "historical_processed": historical_data
         }
 
-        # Lưu vào PostgreSQL
         save_to_postgres(symbol, message)
 
-        # Ghi vào Kafka
         message_df = spark.createDataFrame([(symbol, json.dumps(message))], ["key", "value"])
         message_df.write \
             .format("kafka") \
@@ -239,10 +231,10 @@ signal.signal(signal.SIGINT, handle_sigterm)
 
 try:
     query.awaitTermination()
-except Exception as e: # Xử lý lỗi chung khi awaitTermination
+except Exception as e: 
     print(f"Error during streaming query: {e}")
 finally:
-    if not spark.sparkContext._jsc.sc().isStopped(): # Đảm bảo Spark dừng
+    if not spark.sparkContext._jsc.sc().isStopped(): 
         print("Ensuring Spark is stopped in final block...")
         spark.stop()
     print("Application stopped") 
